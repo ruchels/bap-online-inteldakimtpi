@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description"
+    content="SIPALARUS (Sistem Paspor Hilang Dan Rusak) — Layanan Resmi Pendaftaran BAP Paspor Kantor Imigrasi Kelas I TPI Tanjungpinang. Jadwal pemeriksaan cepat, transparan, dan pasti.">
+  <meta name="keywords"
+    content="SIPALARUS, Sistem Paspor Hilang Dan Rusak, BAP Online, Imigrasi Tanjungpinang, Paspor Rusak, Paspor Hilang, Berita Acara Pemeriksaan, Inteldakim">
+  <meta name="author" content="Kantor Imigrasi Kelas I TPI Tanjungpinang">
+  <meta name="theme-color" content="#0B2240">
+  <title>SIPALARUS — Sistem Paspor Hilang Dan Rusak | Kanim Tanjungpinang</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header class="app-navbar" id="appNavbar">
+    <div class="nav-container">
+      <div class="nav-brand" onclick="showLanding()" title="SIPALARUS - Beranda">
+        <div class="nav-logo-box">
+          <img src="logo_imigrasi.png" alt="Logo Imigrasi"
+            onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\'logo-fallback-icon\'>🦅</span>'">
+        </div>
+        <div class="nav-brand-text">
+          <div class="nav-app-title">SIPA<span class="brand-gold">LARUS</span><span
+              class="nav-badge-v2">INTELDAKIM</span></div>
+          <div class="nav-inst-sub">Sistem Paspor Hilang &amp; Rusak &bull; Kanim Tanjungpinang</div>
+        </div>
+      </div>
+
+      <nav class="nav-menu-desktop" id="navMenuDesktop">
+        <a href="#fitur" class="nav-link" onclick="scrollToSection('sec-features')">Fitur</a>
+        <a href="#alur" class="nav-link" onclick="scrollToSection('sec-steps')">Alur Layanan</a>
+        <a href="#panduan" class="nav-link" onclick="scrollToSection('sec-guide')">Syarat & Biaya</a>
+        <a href="#lacak" class="nav-link" onclick="scrollToSection('sec-quick-track')">Cek Status</a>
+        <a href="#kontak" class="nav-link" onclick="scrollToSection('sec-contact')">Bantuan</a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="nav-auth-guest" id="navGuestActions">
+          <button class="btn-nav-outline" onclick="showAuthPage(false)">Masuk</button>
+          <button class="btn-nav-gold" onclick="showAuthPage(true)">Daftar Akun</button>
+        </div>
+
+
+        <div class="nav-user-chip" id="navUserChip" style="display:none;">
+          <div class="user-avatar-badge" id="navUserAvatar">👤</div>
+          <div class="user-chip-meta" onclick="showUserDashboard()">
+            <span class="user-chip-name" id="navUserName">Pemohon</span>
+            <span class="user-chip-status"><span class="status-live-dot"></span>Akun Aktif</span>
+          </div>
+          <button class="btn-nav-dash" onclick="showUserDashboard()" title="Dashboard Saya">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+          </button>
+          <button class="btn-nav-logout" onclick="doLogout()" title="Keluar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="landingPage" class="page-view active">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="hero-ambient-glow"></div>
+      <div class="hero-grid-pattern"></div>
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+
+      <div class="hero-container">
+        <div class="hero-badge-pill">
+          <span class="pill-dot"></span>
+          <span class="pill-text">Inovasi Resmi Ditjen Imigrasi RI &bull; SIPALARUS</span>
+        </div>
+
+        <div class="hero-brand-callout">
+          <span class="hbc-tag">APLIKASI RESMI</span>
+          <span class="hbc-name">SIPALARUS</span>
+        </div>
+
+        <h1 class="hero-headline">
+          Sistem Paspor Hilang &amp; Rusak<br>
+          <span class="headline-gradient">Layanan BAP Mandiri, Cepat &amp; Terjadwal</span>
+        </h1>
+
+        <p class="hero-lead">
+          <strong>SIPALARUS</strong> adalah sistem layanan terintegrasi resmi dari
+          <strong>Kantor Imigrasi Kelas I TPI Tanjungpinang</strong> (Seksi Inteldakim). Ajukan Berita Acara Pemeriksaan
+          (BAP) paspor rusak, paspor hilang, dan perubahan data secara mandiri dengan kepastian jadwal kedatangan tanpa
+          antri manual.
+        </p>
+
+        <!-- Logged User Quick Bar (Landing) -->
+        <div class="hero-user-card" id="landingUserBar" style="display:none;">
+          <div class="huc-avatar">👤</div>
+          <div class="huc-info">
+            <div class="huc-greeting">Selamat datang kembali,</div>
+            <div class="huc-name" id="landingUserName">—</div>
+            <div class="huc-nik" id="landingUserNik">—</div>
+          </div>
+          <div class="huc-actions">
+            <button class="btn-huc-dash" onclick="showUserDashboard()">Dashboard Saya &rarr;</button>
+            <button class="btn-huc-logout" onclick="doLogout()">Keluar</button>
+          </div>
+        </div>
+
+        <!-- Quick Stats Counter -->
+        <div class="hero-stats-row">
+          <div class="stat-box">
+            <div class="stat-num">4</div>
+            <div class="stat-label">Langkah Mudah</div>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-box">
+            <div class="stat-num">~5 Menit</div>
+            <div class="stat-label">Waktu Pendaftaran</div>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-box">
+            <div class="stat-num">Real-Time</div>
+            <div class="stat-label">Slot Jadwal Online</div>
+          </div>
+          <div class="stat-sep"></div>
+          <div class="stat-box">
+            <div class="stat-num">24 / 7</div>
+            <div class="stat-label">Akses Online</div>
+          </div>
+        </div>
+
+        <!-- PILAR AKRONIM SIPALARUS (INNOVATION HIGHLIGHT) -->
+        <div class="sipalarus-pilar-row">
+          <div class="pilar-card">
+            <div class="pilar-abbr">SI</div>
+            <div class="pilar-info">
+              <strong class="pilar-name">Sistem Informasi</strong>
+              <span class="pilar-desc">Layanan mandiri 24/7 bebas calo</span>
+            </div>
+          </div>
+          <div class="pilar-card">
+            <div class="pilar-abbr">PA</div>
+            <div class="pilar-info">
+              <strong class="pilar-name">Paspor RI</strong>
+              <span class="pilar-desc">Penanganan berkas resmi negara</span>
+            </div>
+          </div>
+          <div class="pilar-card">
+            <div class="pilar-abbr">LA</div>
+            <div class="pilar-info">
+              <strong class="pilar-name">Layanan Akuntabel</strong>
+              <span class="pilar-desc">Slot jadwal transparan &amp; pasti</span>
+            </div>
+          </div>
+          <div class="pilar-card">
+            <div class="pilar-abbr">RUS</div>
+            <div class="pilar-info">
+              <strong class="pilar-name">Rusak &amp; Hilang</strong>
+              <span class="pilar-desc">Pemeriksaan BAP tuntas Inteldakim</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main CTAs -->
+        <div class="hero-cta-group">
+          <button class="btn-cta-primary" id="btnMainCta" onclick="onCtaClick()">
+            <span class="cta-icon-wrap" id="ctaIconWrap">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M15 3h6v6M10 14L21 3M21 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h6" />
+              </svg>
+            </span>
+            <span class="cta-text" id="ctaTextLabel">Mulai Pendaftaran SIPALARUS</span>
+          </button>
+          <button class="btn-cta-secondary" onclick="scrollToSection('sec-quick-track')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Lacak Status Permohonan
+          </button>
+        </div>
+
+        <div class="hero-trust-notes">
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg> Layanan Bebas Antri Manual</span>
+          <span>&bull;</span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg> Wajib NIK Terverifikasi</span>
+          <span>&bull;</span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg> Terhubung Langsung Petugas WA</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK TRACK WIDGET (CEK STATUS TANPA LOGIN) -->
+    <section class="section-quick-track" id="sec-quick-track">
+      <div class="content-container">
+        <div class="track-card">
+          <div class="track-card-header">
+            <div class="track-icon">🔍</div>
+            <div>
+              <h2 class="track-title">Lacak Permohonan SIPALARUS Cepat</h2>
+              <p class="track-sub">Sudah mendaftar di SIPALARUS? Cek progres verifikasi berkas dan jadwal kedatangan
+                langsung dengan Nomor Registrasi BAP Anda.</p>
+            </div>
+          </div>
+
+          <div class="track-form-box">
+            <div class="track-input-wrap">
+              <svg class="track-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input type="text" id="quickTrackInput" placeholder="Masukkan Nomor Registrasi (BAP-YYYYMMDD-XXXX)" maxlength="32">
+              <button class="btn-track-submit" onclick="doQuickTrack()">
+                <span>Cek Status</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </div>
+            <div class="track-hint">Contoh: <code>BAP-20261009-0001</code>
+            </div>
+
+            <!-- Result Box for Quick Track -->
+            <div id="quickTrackResult" class="track-result-box" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: FEATURES -->
+    <section class="section-features" id="sec-features">
+      <div class="content-container">
+        <div class="section-header-center">
+          <span class="sub-eyebrow">Inovasi Layanan Publik</span>
+          <h2 class="section-title">Semua Kebutuhan Paspor Hilang &amp; Rusak<br>Dalam Satu Ekosistem SIPALARUS</h2>
+          <p class="section-desc">Dirancang sesuai standar tata kelola publik modern yang mengutamakan kecepatan,
+            keterbukaan informasi, dan kenyamanan pemohon.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#0EA5E9;">📋</div>
+            <h3 class="fc-title">Pengisian Formulir Mudah</h3>
+            <p class="fc-desc">Pilihan jenis permohonan spesifik untuk paspor rusak, hilang, maupun perubahan data
+              dengan panduan otomatis.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#10B981;">🗓️</div>
+            <h3 class="fc-title">Jadwal Sesi Real-Time</h3>
+            <p class="fc-desc">Pilih hari kerja dan slot jam kedatangan (08:00–17:00 WIB) yang berstatus Slot Tersedia
+              terintegrasi langsung ke sistem kantor.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#8B5CF6;">📸</div>
+            <h3 class="fc-title">Upload & Kompresi Berkas</h3>
+            <p class="fc-desc">Unggah foto KTP, KK, dan dokumen pendukung dari ponsel tanpa takut file terlalu besar,
+              sistem otomatis mengompresi.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#F59E0B;">🔄</div>
+            <h3 class="fc-title">Fitur Reschedule Resmi</h3>
+            <p class="fc-desc">Ada halangan mendesak? Anda dapat mengajukan permohonan perubahan jadwal 1 kali langsung
+              melalui dashboard akun.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#EC4899;">📄</div>
+            <h3 class="fc-title">Bukti PDF Ber-QR Code</h3>
+            <p class="fc-desc">Unduh lembar bukti pendaftaran SIPALARUS resmi ber-QR Code untuk ditunjukkan kepada
+              petugas saat hadir ke kantor.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="fc-icon-wrap" style="--fc-accent:#06B6D4;">💬</div>
+            <h3 class="fc-title">Konfirmasi WhatsApp</h3>
+            <p class="fc-desc">Petugas Seksi Intelijen dan Penindakan Keimigrasian akan menghubungi Anda via WhatsApp
+              terkait konfirmasi berkas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: STEP-BY-STEP FLOW -->
+    <section class="section-steps" id="sec-steps">
+      <div class="content-container">
+        <div class="section-header-center">
+          <span class="sub-eyebrow">Alur Prosedur</span>
+          <h2 class="section-title">4 Tahapan Dari Rumah<br>Hingga Datang Ke Kantor</h2>
+          <p class="section-desc">Ikuti langkah sederhana ini untuk menyelesaikan pendaftaran pemeriksaan Berita Acara
+            Pemeriksaan (BAP) Anda melalui SIPALARUS.</p>
+        </div>
+
+        <div class="steps-horizontal-grid">
+          <div class="flow-card">
+            <div class="flow-step-badge">1</div>
+            <div class="flow-icon">🔐</div>
+            <h4 class="flow-title">Buat Akun NIK</h4>
+            <p class="flow-desc">Daftarkan NIK Anda sebagai identitas unik demi keamanan dan pencegahan calo permohonan.
+            </p>
+          </div>
+          <div class="flow-card">
+            <div class="flow-step-badge">2</div>
+            <div class="flow-icon">📝</div>
+            <h4 class="flow-title">Isi Data & Jadwal</h4>
+            <p class="flow-desc">Lengkapi identitas, pilih tanggal & sesi kedatangan, serta unggah dokumen persyaratan.
+            </p>
+          </div>
+          <div class="flow-card">
+            <div class="flow-step-badge">3</div>
+            <div class="flow-icon">📲</div>
+            <h4 class="flow-title">Konfirmasi Petugas</h4>
+            <p class="flow-desc">Simpan Bukti PDF Anda. Petugas Kanim Tanjungpinang akan memverifikasi berkas via WA.
+            </p>
+          </div>
+          <div class="flow-card">
+            <div class="flow-step-badge">4</div>
+            <div class="flow-icon">🏛️</div>
+            <h4 class="flow-title">Hadir Pemeriksaan</h4>
+            <p class="flow-desc">Datang tepat waktu ke kantor dengan membawa dokumen fisik asli untuk sesi BAP.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: REQUIREMENTS & PNBP FEES (ACCORDION GUIDE) -->
+    <section class="section-guide" id="sec-guide">
+      <div class="content-container">
+        <div class="section-header-center">
+          <span class="sub-eyebrow">Informasi Transparan</span>
+          <h2 class="section-title">Persyaratan Dokumen &<br>Tarif Resmi PNBP Imigrasi</h2>
+          <p class="section-desc">Ketahui ketentuan biaya denda negara resmi (PP No. 28 Tahun 2019) dan kelengkapan
+            berkas sebelum datang.</p>
+        </div>
+
+        <div class="accordion-container">
+          <!-- Accordion 1: Paspor Hilang -->
+          <details class="acc-item" open>
+            <summary class="acc-header">
+              <span class="acc-badge red">Hilang</span>
+              <span class="acc-title">Persyaratan & Denda Paspor Hilang</span>
+              <span class="acc-chevron">▾</span>
+            </summary>
+            <div class="acc-content">
+              <div class="fee-callout fee-red">
+                <div class="fee-num">Rp 1.000.000,-</div>
+                <div class="fee-label">Denda Resmi PNBP Paspor Hilang (di luar biaya buku paspor baru)</div>
+              </div>
+              <ul class="guide-checklist">
+                <li><strong>E-KTP Asli</strong> & Fotokopi (atau Surat Perekaman Dukcapil).</li>
+                <li><strong>Kartu Keluarga (KK) Asli</strong> & Fotokopi.</li>
+                <li><strong>Akta Kelahiran / Ijazah / Buku Nikah</strong> asli yang mencantumkan nama, tanggal lahir,
+                  dan nama orang tua.</li>
+                <li><strong>Surat Laporan Kehilangan</strong> dari Kepolisian setempat (Polsek/Polres) ASLI.</li>
+                <li><em>Catatan Bencana Alam:</em> Jika hilang akibat bencana alam, lampirkan Surat Keterangan Bencana
+                  dari Kantor Kelurahan (denda dapat dibebaskan).</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- Accordion 2: Paspor Rusak -->
+          <details class="acc-item">
+            <summary class="acc-header">
+              <span class="acc-badge amber">Rusak</span>
+              <span class="acc-title">Persyaratan & Denda Paspor Rusak</span>
+              <span class="acc-chevron">▾</span>
+            </summary>
+            <div class="acc-content">
+              <div class="fee-callout fee-amber">
+                <div class="fee-num">Rp 500.000,-</div>
+                <div class="fee-label">Denda Resmi PNBP Paspor Rusak (di luar biaya buku paspor baru)</div>
+              </div>
+              <ul class="guide-checklist">
+                <li><strong>Paspor Lama yang Rusak</strong> fisik (wajib dibawa saat pemeriksaan BAP).</li>
+                <li><strong>E-KTP Asli</strong> & Kartu Keluarga (KK) Asli.</li>
+                <li><strong>Akta Kelahiran / Ijazah / Buku Nikah</strong> asli.</li>
+                <li>Kategori rusak: robek, terkena air/cairan kimia, halaman hilang/terbakar, atau jahitan rusak.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- Accordion 3: Perubahan Data -->
+          <details class="acc-item">
+            <summary class="acc-header">
+              <span class="acc-badge blue">Perubahan Data</span>
+              <span class="acc-title">Persyaratan BAP Perubahan Data Diri</span>
+              <span class="acc-chevron">▾</span>
+            </summary>
+            <div class="acc-content">
+              <div class="fee-callout fee-blue">
+                <div class="fee-num">Rp 0,- (Tanpa Denda)</div>
+                <div class="fee-label">Biaya BAP Perubahan Data Gratis (hanya biaya paspor baru bila diterbitkan)</div>
+              </div>
+              <ul class="guide-checklist">
+                <li><strong>Paspor Lama Asli</strong> yang masih berlaku atau sudah habis masa berlaku.</li>
+                <li><strong>E-KTP & KK Terbaru</strong> yang sudah diperbarui di Dinas Kependudukan dan Catatan Sipil.
+                </li>
+                <li><strong>Dokumen Sah Dasar Perubahan:</strong> Penetapan Pengadilan Negeri (perubahan nama), Akta
+                  Cerai/Buku Nikah (perubahan status), atau Surat Keterangan Instansi Resmi.</li>
+              </ul>
+            </div>
+          </details>
+
+          <!-- Accordion 4: Tata Tertib & Busana -->
+          <details class="acc-item">
+            <summary class="acc-header">
+              <span class="acc-badge green">Tata Tertib</span>
+              <span class="acc-title">Tata Tertib Kehadiran & Kode Berpakaian Kantor</span>
+              <span class="acc-chevron">▾</span>
+            </summary>
+            <div class="acc-content">
+              <div class="rules-grid">
+                <div class="rule-box">
+                  <span class="rule-icon">👔</span>
+                  <strong>Pakaian Sopan Berkerah</strong>
+                  <p>Gunakan kemeja atau baju berkerah rapi. Tidak diperkenankan menggunakan kaos oblong tanpa kerah.
+                  </p>
+                </div>
+                <div class="rule-box">
+                  <span class="rule-icon">👟</span>
+                  <strong>Wajib Bersepatu</strong>
+                  <p>Gunakan sepatu tertutup. Dilarang menggunakan sandal jepit / sandal santai di ruang pelayanan.</p>
+                </div>
+                <div class="rule-box">
+                  <span class="rule-icon">⏰</span>
+                  <strong>Hadir 15 Menit Lebih Awal</strong>
+                  <p>Datang 15 menit sebelum jam sesi dimulai untuk pemeriksaan berkas di meja resepsionis.</p>
+                </div>
+                <div class="rule-box">
+                  <span class="rule-icon">📄</span>
+                  <strong>Bawa Dokumen Asli</strong>
+                  <p>Wajib membawa seluruh berkas asli dan cetak lembar Bukti Pendaftaran SIPALARUS Anda.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: LOCATION & CONTACT -->
+    <section class="section-contact" id="sec-contact">
+      <div class="content-container">
+        <div class="contact-grid">
+          <div class="contact-card info-card">
+            <span class="sub-eyebrow">Lokasi & Kontak Layanan</span>
+            <h2 class="contact-heading">Kantor Imigrasi Kelas I TPI Tanjungpinang</h2>
+            <p class="contact-subheading">Seksi Intelijen dan Penindakan Keimigrasian (Inteldakim)</p>
+
+            <div class="info-list">
+              <div class="info-entry">
+                <div class="ie-icon">📍</div>
+                <div>
+                  <strong>Alamat Kantor</strong>
+                  <p>Jl. Ahmad Yani No.31, Sei Jang, Kec. Tj. Pinang Kota, Kota Tanjung Pinang, Kepulauan Riau 29122</p>
+                </div>
+              </div>
+
+              <div class="info-entry">
+                <div class="ie-icon">🕒</div>
+                <div>
+                  <strong>Hari & Jam Kerja BAP</strong>
+                  <p>Senin – Kamis: 08:00 – 16:00 WIB<br>Jumat: 08:00 – 16:30 WIB<br><span class="badge-holiday">Sabtu &
+                      Minggu: Libur / Tutup</span></p>
+                </div>
+              </div>
+
+              <div class="info-entry">
+                <div class="ie-icon">💬</div>
+                <div>
+                  <strong>Helpdesk Layanan WhatsApp</strong>
+                  <p>Hotline Informasi & Pengaduan Keimigrasian: <a href="https://wa.me/6281371514943" target="_blank"
+                      rel="noopener">081371514943</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-card action-card">
+            <div class="cta-inner-card">
+              <div class="cic-icon">🦅</div>
+              <h3 class="cic-title">Sudah Siap Mengajukan Permohonan?</h3>
+              <p class="cic-desc">Proses pendaftaran melalui SIPALARUS hanya memakan waktu ~5 menit. Daftarkan diri Anda
+                sekarang dan
+                dapatkan slot jadwal resmi tanpa calo.</p>
+              <button class="btn-cta-primary full-w" onclick="onCtaClick()">
+                <span>Mulai Pendaftaran SIPALARUS Sekarang</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+              <div class="cic-lock">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>Kerahasiaan data pemohon dilindungi Undang-Undang PDP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <div class="content-container footer-content">
+        <div class="footer-left">
+          <div class="footer-brand">
+            <img src="logo_imigrasi.png" alt="Logo Imigrasi" class="footer-logo" onerror="this.style.display='none'">
+            <div>
+              <strong>SIPALARUS — Sistem Paspor Hilang Dan Rusak</strong>
+              <p>Kementerian Imigrasi Dan Permasyarakatan &bull; Kantor Imigrasi Kelas I TPI Tanjungpinang &bull; Seksi
+                Intelijen dan Penindakan Keimigrasian</p>
+            </div>
+          </div>
+        </div>
+        <div class="footer-right">
+          <p>&copy; 2026 SIPALARUS &bull; Kementerian Imigrasi Dan Permasyarakatan &bull; Hak Cipta Dilindungi</p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════
+     PAGE 2: AUTH PAGE (LOGIN & REGISTER)
+  ═══════════════════════════════════════════════════ -->
+  <section id="authPage" class="page-view">
+    <div class="auth-bg-layer"></div>
+    <div class="auth-orb auth-orb-1"></div>
+
+    <div class="auth-wrapper">
+      <div class="auth-header-bar">
+        <button class="btn-icon-back" onclick="showLanding()" title="Kembali ke Beranda">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+        </button>
+        <div class="auth-header-brand" onclick="showLanding()" title="SIPALARUS - Beranda">
+          <img src="logo_imigrasi.png" alt="Logo" class="auth-logo-mini" onerror="this.style.display='none'">
+          <span>SIPA<span class="brand-gold">LARUS</span></span>
+        </div>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="auth-card-glass">
+        <!-- Nav Tabs for Login / Register -->
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthTab('login')">Masuk Akun</button>
+          <button class="auth-tab-btn" id="tabBtnRegister" onclick="switchAuthTab('register')">Daftar Akun Baru</button>
+        </div>
+
+        <!-- Alert Box -->
+        <div class="auth-alert-box" id="authGlobalAlert" style="display:none;">
+          <span class="alert-icon" id="authAlertIcon">⚠️</span>
+          <span class="alert-msg" id="authAlertMsg"></span>
+        </div>
+
+        <!-- PANEL LOGIN -->
+        <div class="auth-tab-panel active" id="loginPanel">
+          <div class="auth-panel-heading">
+            <h2 class="auth-panel-title">Selamat Datang Kembali</h2>
+            <p class="auth-panel-sub">Silakan masuk menggunakan NIK dan password terdaftar Anda.</p>
+          </div>
+
+          <form class="auth-form" onsubmit="event.preventDefault(); doLogin();">
+            <div class="form-group">
+              <label class="form-label" for="loginNik">Nomor Induk Kependudukan (NIK)</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🪪</span>
+                <input type="tel" id="loginNik" class="form-control" placeholder="16 digit NIK sesuai KTP"
+                  maxlength="16" inputmode="numeric" autocomplete="username">
+              </div>
+              <div class="field-error-msg" id="err-loginNik">NIK harus berisi 16 digit angka valid</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">Kata Sandi / Password</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password Anda"
+                  autocomplete="current-password">
+                <button type="button" class="btn-toggle-pwd"
+                  onclick="togglePasswordVisibility('loginPassword', this)">👁️</button>
+              </div>
+              <div class="field-error-msg" id="err-loginPassword">Password wajib diisi</div>
+            </div>
+
+            <button type="submit" class="btn-auth-submit" id="btnLogin">
+              <span>Masuk Sekarang</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
+              </svg>
+            </button>
+          </form>
+
+          <div class="auth-footer-prompt">
+            Belum memiliki akun? <a href="javascript:void(0)" onclick="switchAuthTab('register')">Buat Akun Pemohon
+              &rarr;</a>
+          </div>
+        </div>
+
+        <!-- PANEL REGISTER -->
+        <div class="auth-tab-panel" id="registerPanel" style="display:none;">
+          <div class="auth-panel-heading">
+            <h2 class="auth-panel-title">Buat Akun Pemohon</h2>
+            <p class="auth-panel-sub">Daftarkan NIK 16 digit Anda sebagai identitas resmi layanan SIPALARUS.</p>
+          </div>
+
+          <form class="auth-form" onsubmit="event.preventDefault(); doRegister();">
+            <div class="form-group">
+              <label class="form-label" for="regNama">Nama Lengkap Sesuai KTP *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">👤</span>
+                <input type="text" id="regNama" class="form-control" placeholder="Nama lengkap tanpa gelar singkatan"
+                  autocomplete="name">
+              </div>
+              <div class="field-error-msg" id="err-regNama">Nama lengkap wajib diisi (minimal 3 karakter)</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regNik">Nomor Induk Kependudukan (NIK) *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🪪</span>
+                <input type="tel" id="regNik" class="form-control" placeholder="16 digit NIK KTP Anda" maxlength="16"
+                  inputmode="numeric">
+              </div>
+              <div class="field-error-msg" id="err-regNik">NIK wajib tepat 16 digit angka</div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="regTglLahir">Tanggal Lahir *</label>
+                <input type="date" id="regTglLahir" class="form-control">
+                <div class="field-error-msg" id="err-regTglLahir">Tanggal lahir wajib diisi</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="regJK">Jenis Kelamin *</label>
+                <select id="regJK" class="form-control">
+                  <option value="">-- Pilih --</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+                <div class="field-error-msg" id="err-regJK">Pilih jenis kelamin</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regPassword">Kata Sandi Baru (Min. 6 Karakter) *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi akun"
+                  autocomplete="new-password">
+                <button type="button" class="btn-toggle-pwd"
+                  onclick="togglePasswordVisibility('regPassword', this)">👁️</button>
+              </div>
+              <div class="field-error-msg" id="err-regPassword">Password minimal 6 karakter</div>
+            </div>
+
+            <button type="submit" class="btn-auth-submit" id="btnRegister">
+              <span>Daftar Akun Baru</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" />
+              </svg>
+            </button>
+          </form>
+
+          <div class="auth-footer-prompt">
+            Sudah pernah mendaftar? <a href="javascript:void(0)" onclick="switchAuthTab('login')">Masuk ke akun
+              &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+     PAGE 3: USER DASHBOARD (STATUS & RESCHEDULE)
+═══════════════════════════════════════════════════ -->
+  <section id="userDashboardPage" class="page-view">
+    <div class="content-container dash-container">
+      <!-- Breadcrumb & Top Bar -->
+      <div class="dash-breadcrumb">
+        <button class="btn-breadcrumb-back" onclick="showLanding()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          <span>Beranda</span>
+        </button>
+        <span class="b-sep">/</span>
+        <span class="b-current">Dashboard Pemohon</span>
+      </div>
+
+      <!-- User Greeting Banner -->
+      <div class="dash-profile-banner">
+        <div class="dpb-left">
+          <div class="dpb-avatar">👤</div>
+          <div>
+            <div class="dpb-title">Selamat Datang di Portal SIPALARUS</div>
+            <h2 class="dpb-name" id="dashUserName">—</h2>
+            <div class="dpb-chips">
+              <span class="chip-nik">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+                NIK: <strong id="dashUserNik">—</strong>
+              </span>
+              <span class="chip-auth"><span class="chip-auth-dot"></span>Terverifikasi</span>
+            </div>
+          </div>
+        </div>
+        <div class="dpb-right">
+          <button class="btn-dash-logout" onclick="doLogout()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            Keluar
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="dashLoadingState" class="dash-loading-card">
+        <div class="dash-spinner"></div>
+        <p class="dash-loading-text">Memuat data permohonan SIPALARUS Anda dari sistem imigrasi...</p>
+      </div>
+
+      <!-- Content State: Cards Container -->
+      <div id="dashContent" style="display:none;">
+        <div class="dash-sec-head">
+          <h3 class="dash-sec-title">Status Permohonan SIPALARUS Anda</h3>
+          <button id="btnRefreshDash" class="btn-refresh-dash" onclick="loadUserRegistration(true)"
+            title="Segarkan Data">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            Segarkan
+          </button>
+        </div>
+
+        <div id="regCardContainer"></div>
+
+        <!-- Empty State (User has not registered yet) -->
+        <div id="noRegState" class="dash-empty-card" style="display:none;">
+          <div class="empty-graphic">📋</div>
+          <h3 class="empty-title">Belum Ada Permohonan SIPALARUS Aktif</h3>
+          <p class="empty-desc">Akun Anda belum memiliki permohonan Berita Acara Pemeriksaan yang terdaftar. Mulai
+            pendaftaran baru sekarang melalui SIPALARUS untuk menentukan jadwal kedatangan Anda.</p>
+          <button class="btn-cta-primary" onclick="goToRegistration()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>Daftar SIPALARUS Sekarang</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+     PAGE 4: MAIN APP (4-STEP BAP REGISTRATION)
+═══════════════════════════════════════════════════ -->
+  <section id="mainApp" class="page-view">
+    <!-- Top App Bar for Registration Form -->
+    <div class="form-header-bar">
+      <div class="content-container fhb-container">
+        <button class="btn-fhb-back" onclick="backToLanding()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          <span class="fhb-back-text">Kembali</span>
+        </button>
+
+        <div class="fhb-title-wrap">
+          <div class="fhb-title">Formulir Pendaftaran SIPALARUS</div>
+          <div class="fhb-sub">Sistem Paspor Hilang Dan Rusak &bull; Kanim Tanjungpinang</div>
+        </div>
+
+        <div class="fhb-user-info">
+          <span class="fhb-user-pill">
+            <span class="fhb-dot"></span>
+            <span id="headerUserName">Pemohon</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Multi-step Layout -->
+    <div class="content-container form-main-layout">
+      <!-- LEFT SIDE: Sticky Stepper Navigation (Desktop + Mobile Responsive) -->
+      <aside class="form-stepper-sidebar">
+        <div class="stepper-card-sticky">
+          <div class="sc-header">
+            <span class="sc-title">Alur Pendaftaran</span>
+            <span class="sc-step-badge" id="stepCounterBadge">Langkah 1 dari 4</span>
+          </div>
+
+          <div class="vertical-stepper">
+            <!-- Step 1 Indicator -->
+            <div class="v-step active" id="vstep-1" onclick="tryNavigateStep(1)">
+              <div class="v-circle" id="sc1">1</div>
+              <div class="v-meta">
+                <div class="v-name" id="sl1">Data Diri & Permohonan</div>
+                <div class="v-desc">Identitas pemohon & jenis paspor</div>
+              </div>
+            </div>
+            <div class="v-line" id="vline-1"></div>
+
+            <!-- Step 2 Indicator -->
+            <div class="v-step" id="vstep-2" onclick="tryNavigateStep(2)">
+              <div class="v-circle" id="sc2">2</div>
+              <div class="v-meta">
+                <div class="v-name" id="sl2">Jadwal Kedatangan</div>
+                <div class="v-desc">Pilih tanggal & sesi waktu BAP</div>
+              </div>
+            </div>
+            <div class="v-line" id="vline-2"></div>
+
+            <!-- Step 3 Indicator -->
+            <div class="v-step" id="vstep-3" onclick="tryNavigateStep(3)">
+              <div class="v-circle" id="sc3">3</div>
+              <div class="v-meta">
+                <div class="v-name" id="sl3">Upload Dokumen</div>
+                <div class="v-desc">KTP, KK, & berkas persyaratan</div>
+              </div>
+            </div>
+            <div class="v-line" id="vline-3"></div>
+
+            <!-- Step 4 Indicator -->
+            <div class="v-step" id="vstep-4" onclick="tryNavigateStep(4)">
+              <div class="v-circle" id="sc4">4</div>
+              <div class="v-meta">
+                <div class="v-name" id="sl4">Konfirmasi & Kirim</div>
+                <div class="v-desc">Tinjau ringkasan & cetak bukti</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto-Draft Banner Indicator -->
+          <div class="draft-indicator-box" id="draftIndicatorBox" style="display:none;">
+            <div class="dib-left">
+              <span class="dib-icon">💾</span>
+              <span class="dib-text">Draf tersimpan otomatis</span>
+            </div>
+            <button type="button" class="btn-clear-draft" onclick="clearDraftData()" title="Hapus Draf">Hapus</button>
+          </div>
+
+          <!-- Helpdesk card inside sidebar -->
+          <div class="sidebar-help-card">
+            <div class="shc-icon">💡</div>
+            <div class="shc-text">
+              <strong>Butuh Bantuan?</strong>
+              <p>Jika berkas Anda belum lengkap atau ragu jenis permohonan, hubungi petugas via WhatsApp di <a
+                  href="https://wa.me/6281371514943" target="_blank" rel="noopener">081371514943</a>.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT SIDE: Form Step Panels -->
+      <main class="form-content-area">
+
+        <!-- ─── STEP 1: DATA DIRI & PERMOHONAN ─── -->
+        <div class="form-step-panel active" data-step="1" id="step1">
+          <div class="form-card">
+            <div class="form-card-title-row">
+              <div class="fct-icon">👤</div>
+              <div>
+                <h3 class="fct-heading">Data Pribadi Pemohon</h3>
+                <p class="fct-sub">Pastikan data diri sesuai dengan identitas resmi yang tertera di E-KTP Anda.</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="nama">Nama Lengkap Pemohon *</label>
+              <input type="text" id="nama" class="form-control" placeholder="Sesuai KTP / Paspor lama"
+                autocomplete="name">
+              <div class="field-error-msg" id="err-nama">Nama lengkap wajib diisi (minimal 3 karakter)</div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="tempatLahir">Tempat Lahir *</label>
+                <input type="text" id="tempatLahir" class="form-control" placeholder="Contoh: Tanjungpinang">
+                <div class="field-error-msg" id="err-tempatLahir">Tempat lahir wajib diisi</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="tanggalLahir">Tanggal Lahir *</label>
+                <input type="date" id="tanggalLahir" class="form-control">
+                <div class="field-error-msg" id="err-tanggalLahir">Tanggal lahir wajib diisi</div>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="jenisKelamin">Jenis Kelamin *</label>
+                <select id="jenisKelamin" class="form-control">
+                  <option value="">-- Pilih Jenis Kelamin --</option>
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+                <div class="field-error-msg" id="err-jenisKelamin">Jenis kelamin wajib dipilih</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="hp">Nomor HP / WhatsApp Aktif *</label>
+                <input type="tel" id="hp" class="form-control" placeholder="08xxxxxxxxxx" inputmode="numeric">
+                <div class="field-error-msg" id="err-hp">Nomor HP/WA aktif wajib diisi (minimal 9 digit)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <div class="form-card-title-row">
+              <div class="fct-icon">📘</div>
+              <div>
+                <h3 class="fct-heading">Detail Permohonan BAP</h3>
+                <p class="fct-sub">Pilih jenis kendala paspor dan tujuan pembuatan dokumen keimigrasian.</p>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="jenisPermohonan">Jenis Permohonan BAP *</label>
+                <select id="jenisPermohonan" class="form-control" onchange="onJenisPermohonanChange()">
+                  <option value="">-- Pilih Jenis Permohonan --</option>
+                  <option value="BAP Paspor Rusak">BAP Paspor Rusak</option>
+                  <option value="BAP Paspor Hilang">BAP Paspor Hilang</option>
+                  <option value="BAP Perubahan Data">BAP Perubahan Data Diri</option>
+                </select>
+                <div class="field-error-msg" id="err-jenis_permohonan">Jenis permohonan wajib dipilih</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="jenisPaspor">Jenis Buku Paspor *</label>
+                <select id="jenisPaspor" class="form-control">
+                  <option value="">-- Pilih Jenis Paspor --</option>
+                  <option value="Paspor Elektronik 5Th">Paspor Elektronik 5 Tahun</option>
+                  <option value="Paspor Elektronik 10Th">Paspor Elektronik 10 Tahun</option>
+                </select>
+                <div class="field-error-msg" id="err-jenis_paspor">Pilih jenis paspor yang diajukan</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="tujuan">Tujuan Pembuatan Paspor & Alasan *</label>
+              <textarea id="tujuan" class="form-control"
+                placeholder="Jelaskan tujuan Anda (misal: Wisata ke Malaysia/Singapura, Bekerja, Umroh, Studi, dll)..."></textarea>
+              <div class="field-error-msg" id="err-tujuan">Tujuan pembuatan wajib diisi (minimal 5 karakter)</div>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="form-nav-row">
+            <div></div>
+            <button type="button" class="btn-form-next" onclick="goStep(2)">
+              <span>Lanjut ke Jadwal</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 2: PILIH JADWAL KEDATANGAN ─── -->
+        <div class="form-step-panel" data-step="2" id="step2" style="display:none;">
+          <div class="form-card">
+            <div class="form-card-title-row">
+              <div class="fct-icon">🗓️</div>
+              <div>
+                <h3 class="fct-heading">Pilih Jadwal Kedatangan BAP</h3>
+                <p class="fct-sub">Pilih tanggal hari kerja (Senin–Jumat) kemudian pilih sesi jam yang masih tersedia.
+                </p>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:18px;">
+              <label class="form-label" for="tanggal">Tanggal Kedatangan (Hari Kerja WIB)</label>
+              <div class="input-with-icon">
+                <span class="input-icon">📅</span>
+                <input type="date" id="tanggal" class="form-control" onchange="onDateChange()">
+              </div>
+              <div class="field-hint-text">Pendaftaran jadwal hanya dapat dipilih mulai H+1 (hari kerja selanjutnya).
+                Sabtu, Minggu, dan hari libur nasional kantor tutup.</div>
+            </div>
+
+            <!-- Dynamic Slots Container -->
+            <div class="slots-container">
+              <label class="form-label">Pilih Sesi Jam Kedatangan</label>
+              <div id="slotArea">
+                <div class="slot-loading-state">
+                  <div class="slot-spinner"></div>
+                  <p>Silakan tentukan tanggal kedatangan terlebih dahulu</p>
+                </div>
+              </div>
+              <div class="field-error-msg" id="err-slot">Silakan pilih salah satu sesi jam dengan status Slot Tersedia
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="form-nav-row">
+            <button type="button" class="btn-form-back" onclick="goStep(1)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span>Kembali</span>
+            </button>
+            <button type="button" class="btn-form-next" onclick="goStep(3)">
+              <span>Lanjut ke Upload Dokumen</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 3: UPLOAD DOKUMEN ─── -->
+        <div class="form-step-panel" data-step="3" id="step3" style="display:none;">
+          <div class="form-card">
+            <div class="form-card-title-row">
+              <div class="fct-icon">📎</div>
+              <div>
+                <h3 class="fct-heading">Upload Berkas Persyaratan</h3>
+                <p class="fct-sub">Ambil foto langsung dari kamera HP atau unggah dari galeri/folder. Format
+                  <strong>JPG, PNG, WEBP, atau PDF</strong> (Maks. 10MB per berkas, auto-kompresi).
+                </p>
+              </div>
+            </div>
+
+            <!-- DOKUMEN WAJIB UTAMA -->
+            <div class="doc-section">
+              <div class="doc-sec-divider">
+                <span>DOKUMEN WAJIB UTAMA</span>
+              </div>
+
+              <!-- 1. E-KTP -->
+              <div class="upload-field-item" id="item-ktp">
+                <div class="uf-label-row">
+                  <span class="uf-title">1. E-KTP Pemohon</span>
+                  <span class="badge-req">Wajib</span>
+                </div>
+                <div class="dropzone-box" id="up-ktp" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'ktp')">
+                  <input type="file" id="file-ktp" accept="image/*,application/pdf"
+                    onchange="handleFileNew(this,'ktp')">
+                  <div class="dz-content" id="trigger-ktp">
+                    <div class="dz-icon">🪪</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Klik untuk foto atau pilih E-KTP</strong>
+                      <span class="dz-sub-text">Bisa seret & lepas berkas ke area ini</span>
+                    </div>
+                    <div class="dz-badges">
+                      <span class="badge-pill">📷 Kamera</span>
+                      <span class="badge-pill">🖼️ Galeri</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-ktp" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div>
+                      <span>Memproses & mengunggah dokumen...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-ktp" style="width:25%;"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-ktp" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-ktp"></div>
+                <div class="field-error-msg" id="err-ktp">E-KTP wajib diunggah</div>
+              </div>
+
+              <!-- 2. Kartu Keluarga (KK) -->
+              <div class="upload-field-item" id="item-kk">
+                <div class="uf-label-row">
+                  <span class="uf-title">2. Kartu Keluarga (KK)</span>
+                  <span class="badge-req">Wajib</span>
+                </div>
+                <div class="dropzone-box" id="up-kk" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'kk')">
+                  <input type="file" id="file-kk" accept="image/*,application/pdf" onchange="handleFileNew(this,'kk')">
+                  <div class="dz-content" id="trigger-kk">
+                    <div class="dz-icon">👨‍👩‍👧‍👦</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Klik untuk foto atau pilih Kartu Keluarga</strong>
+                      <span class="dz-sub-text">Pastikan barcode/tanda tangan tertera jelas</span>
+                    </div>
+                    <div class="dz-badges">
+                      <span class="badge-pill">📷 Kamera</span>
+                      <span class="badge-pill">🖼️ Galeri</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-kk" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div>
+                      <span>Memproses & mengunggah dokumen...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-kk" style="width:25%;"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-kk" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-kk"></div>
+                <div class="field-error-msg" id="err-kk">Kartu Keluarga wajib diunggah</div>
+              </div>
+
+              <!-- 3. Akta / Ijazah / Buku Nikah -->
+              <div class="upload-field-item" id="item-akta">
+                <div class="uf-label-row">
+                  <span class="uf-title">3. Akta Lahir / Ijazah / Buku Nikah</span>
+                  <span class="badge-req">Wajib</span>
+                </div>
+                <div class="dropzone-box" id="up-akta" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'akta')">
+                  <input type="file" id="file-akta" accept="image/*,application/pdf"
+                    onchange="handleFileNew(this,'akta')">
+                  <div class="dz-content" id="trigger-akta">
+                    <div class="dz-icon">📜</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Pilih salah satu: Akta Lahir / Ijazah / Buku Nikah</strong>
+                      <span class="dz-sub-text">Dokumen pendukung identitas kelahiran</span>
+                    </div>
+                    <div class="dz-badges">
+                      <span class="badge-pill">📷 Kamera</span>
+                      <span class="badge-pill">🖼️ Galeri</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-akta" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div>
+                      <span>Memproses & mengunggah dokumen...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-akta" style="width:25%;"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-akta" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-akta"></div>
+                <div class="field-error-msg" id="err-akta">Salah satu dokumen akta/ijazah/buku nikah wajib diunggah
+                </div>
+              </div>
+            </div>
+
+            <!-- DOKUMEN KHUSUS PASPOR RUSAK -->
+            <div class="doc-section" id="grp-rusak" style="display:none;">
+              <div class="doc-sec-divider">
+                <span>KHUSUS &bull; PASPOR RUSAK</span>
+              </div>
+              <div class="conditional-alert-box">
+                <span>📕</span>
+                <span>Unggah foto kondisi fisik paspor yang rusak (halaman biodata & bagian yang rusak/robek/terkena
+                  cairan).</span>
+              </div>
+
+              <div class="upload-field-item" id="item-fotoPaspor">
+                <div class="uf-label-row">
+                  <span class="uf-title">Foto Fisik Paspor Rusak</span>
+                  <span class="badge-req">Wajib</span>
+                </div>
+                <div class="dropzone-box" id="up-fotoPaspor" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'fotoPaspor')">
+                  <input type="file" id="file-fotoPaspor" accept="image/*,application/pdf"
+                    onchange="handleFileNew(this,'fotoPaspor')">
+                  <div class="dz-content" id="trigger-fotoPaspor">
+                    <div class="dz-icon">📕</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Foto paspor yang mengalami kerusakan</strong>
+                      <span class="dz-sub-text">Pastikan nomor paspor terlihat jika memungkinkan</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-fotoPaspor" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div><span>Mengunggah...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-fotoPaspor"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-fotoPaspor" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-fotoPaspor"></div>
+                <div class="field-error-msg" id="err-fotoPaspor">Foto paspor rusak wajib diunggah</div>
+              </div>
+            </div>
+
+            <!-- DOKUMEN KHUSUS PASPOR HILANG -->
+            <div class="doc-section" id="grp-hilang" style="display:none;">
+              <div class="doc-sec-divider">
+                <span>KHUSUS &bull; PASPOR HILANG</span>
+              </div>
+              <div class="conditional-alert-box">
+                <span>🚔</span>
+                <span>Wajib melampirkan <strong>Surat Keterangan Kehilangan Asli</strong> dari Kepolisian. Jika paspor
+                  hilang karena bencana alam (kebanjiran/kebakaran), lampirkan Surat Keterangan dari Kantor
+                  Kelurahan.</span>
+              </div>
+
+              <div class="form-group" style="margin-bottom:14px;">
+                <label class="form-label" for="jenisSuratHilang">Penyebab Kehilangan & Jenis Surat Keterangan *</label>
+                <select id="jenisSuratHilang" class="form-control" onchange="renderSuratHilang()">
+                  <option value="">-- Pilih Jenis Surat Kehilangan --</option>
+                  <option value="polisi">Hilang Bukan Bencana (Surat Kepolisian - Denda Rp1jt)</option>
+                  <option value="kelurahan">Hilang Akibat Bencana Alam (Surat Kelurahan - Bebas Denda)</option>
+                </select>
+                <div class="field-error-msg" id="err-jenisSuratHilang">Pilih jenis surat keterangan kehilangan</div>
+              </div>
+
+              <!-- Upload Surat Polisi -->
+              <div id="wrap-suratPolisi" style="display:none;">
+                <div class="upload-field-item" id="item-suratPolisi">
+                  <div class="uf-label-row">
+                    <span class="uf-title">Surat Kehilangan dari Kepolisian</span>
+                    <span class="badge-req">Wajib</span>
+                  </div>
+                  <div class="dropzone-box" id="up-suratPolisi" ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'suratPolisi')">
+                    <input type="file" id="file-suratPolisi" accept="image/*,application/pdf"
+                      onchange="handleFileNew(this,'suratPolisi')">
+                    <div class="dz-content" id="trigger-suratPolisi">
+                      <div class="dz-icon">🚔</div>
+                      <div class="dz-meta">
+                        <strong class="dz-main-text">Surat Tanda Penerimaan Laporan Kehilangan (Polsek/Polres)</strong>
+                        <span class="dz-sub-text">Foto dokumen asli surat kepolisian</span>
+                      </div>
+                    </div>
+                    <div class="dz-progress-wrap" id="prog-suratPolisi" style="display:none;">
+                      <div class="dz-progress-label">
+                        <div class="dz-spinner"></div><span>Mengunggah...</span>
+                      </div>
+                      <div class="dz-progress-bar">
+                        <div class="dz-progress-fill" id="progfill-suratPolisi"></div>
+                      </div>
+                    </div>
+                    <div class="preview-panel" id="preview-suratPolisi" style="display:none;"></div>
+                  </div>
+                  <div class="file-alert-box" id="filealert-suratPolisi"></div>
+                  <div class="field-error-msg" id="err-suratPolisi">Surat kepolisian wajib diunggah</div>
+                </div>
+              </div>
+
+              <!-- Upload Surat Kelurahan -->
+              <div id="wrap-suratKelurahan" style="display:none;">
+                <div class="upload-field-item" id="item-suratKelurahan">
+                  <div class="uf-label-row">
+                    <span class="uf-title">Surat Keterangan Bencana dari Kelurahan</span>
+                    <span class="badge-req">Wajib</span>
+                  </div>
+                  <div class="dropzone-box" id="up-suratKelurahan" ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'suratKelurahan')">
+                    <input type="file" id="file-suratKelurahan" accept="image/*,application/pdf"
+                      onchange="handleFileNew(this,'suratKelurahan')">
+                    <div class="dz-content" id="trigger-suratKelurahan">
+                      <div class="dz-icon">🏢</div>
+                      <div class="dz-meta">
+                        <strong class="dz-main-text">Surat Keterangan Bencana Alam Resmi Kelurahan</strong>
+                        <span class="dz-sub-text">Ditandatangani Lurah dengan cap basah resmi</span>
+                      </div>
+                    </div>
+                    <div class="dz-progress-wrap" id="prog-suratKelurahan" style="display:none;">
+                      <div class="dz-progress-label">
+                        <div class="dz-spinner"></div><span>Mengunggah...</span>
+                      </div>
+                      <div class="dz-progress-bar">
+                        <div class="dz-progress-fill" id="progfill-suratKelurahan"></div>
+                      </div>
+                    </div>
+                    <div class="preview-panel" id="preview-suratKelurahan" style="display:none;"></div>
+                  </div>
+                  <div class="file-alert-box" id="filealert-suratKelurahan"></div>
+                  <div class="field-error-msg" id="err-suratKelurahan">Surat keterangan kelurahan wajib diunggah</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DOKUMEN KHUSUS PERUBAHAN DATA -->
+            <div class="doc-section" id="grp-perubahan" style="display:none;">
+              <div class="doc-sec-divider">
+                <span>KHUSUS &bull; PERUBAHAN DATA DIRI</span>
+              </div>
+              <div class="conditional-alert-box">
+                <span>🏛️</span>
+                <span>Unggah surat penetapan pengadilan, akta perkawinan, surat keputusan dinas, atau dokumen resmi
+                  instansi pemerintah yang menjadi dasar yuridis perubahan data Anda.</span>
+              </div>
+
+              <div class="upload-field-item" id="item-suratPemerintah">
+                <div class="uf-label-row">
+                  <span class="uf-title">Surat Penetapan / Keputusan Resmi Pemerintah</span>
+                  <span class="badge-req">Wajib</span>
+                </div>
+                <div class="dropzone-box" id="up-suratPemerintah" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'suratPemerintah')">
+                  <input type="file" id="file-suratPemerintah" accept="image/*,application/pdf"
+                    onchange="handleFileNew(this,'suratPemerintah')">
+                  <div class="dz-content" id="trigger-suratPemerintah">
+                    <div class="dz-icon">🏛️</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Surat Penetapan Pengadilan / Instansi Berwenang</strong>
+                      <span class="dz-sub-text">Dasar hukum perubahan nama/tanggal lahir/jenis kelamin</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-suratPemerintah" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div><span>Mengunggah...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-suratPemerintah"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-suratPemerintah" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-suratPemerintah"></div>
+                <div class="field-error-msg" id="err-suratPemerintah">Surat resmi pemerintah wajib diunggah</div>
+              </div>
+            </div>
+
+            <!-- DOKUMEN TAMBAHAN / OPSIONAL -->
+            <div class="doc-section">
+              <div class="doc-sec-divider">
+                <span>DOKUMEN PENDUKUNG TAMBAHAN (OPSIONAL)</span>
+              </div>
+
+              <div class="upload-field-item" id="item-pendukung">
+                <div class="uf-label-row">
+                  <span class="uf-title">Dokumen Pendukung Lainnya</span>
+                  <span class="badge-opt">Opsional</span>
+                </div>
+                <div class="dropzone-box" id="up-pendukung" ondragover="handleDragOver(event)"
+                  ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'pendukung')">
+                  <input type="file" id="file-pendukung" accept="image/*,application/pdf"
+                    onchange="handleFileNew(this,'pendukung')">
+                  <div class="dz-content" id="trigger-pendukung">
+                    <div class="dz-icon">📄</div>
+                    <div class="dz-meta">
+                      <strong class="dz-main-text">Surat Tugas / Rekomendasi / Bukti Tiket (Opsional)</strong>
+                      <span class="dz-sub-text">Dapat dilampirkan bila ada berkas penguat permohonan</span>
+                    </div>
+                  </div>
+                  <div class="dz-progress-wrap" id="prog-pendukung" style="display:none;">
+                    <div class="dz-progress-label">
+                      <div class="dz-spinner"></div><span>Mengunggah...</span>
+                    </div>
+                    <div class="dz-progress-bar">
+                      <div class="dz-progress-fill" id="progfill-pendukung"></div>
+                    </div>
+                  </div>
+                  <div class="preview-panel" id="preview-pendukung" style="display:none;"></div>
+                </div>
+                <div class="file-alert-box" id="filealert-pendukung"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="form-nav-row">
+            <button type="button" class="btn-form-back" id="btnBack3" onclick="goStep(2)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span>Kembali</span>
+            </button>
+            <button type="button" class="btn-form-next" id="btnNext3" onclick="goStep(4)">
+              <span>Tinjau Ringkasan</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── STEP 4: RINGKASAN & KIRIM ─── -->
+        <div class="form-step-panel" data-step="4" id="step4" style="display:none;">
+          <div class="form-card">
+            <div class="form-card-title-row">
+              <div class="fct-icon">✅</div>
+              <div>
+                <h3 class="fct-heading">Verifikasi & Ringkasan Permohonan</h3>
+                <p class="fct-sub">Periksa kembali rincian data Anda sebelum dikirimkan ke sistem antrian resmi kantor
+                  imigrasi.</p>
+              </div>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="summary-table">
+              <div class="sum-group-header">DATA IDENTITAS PEMOHON</div>
+              <div class="sum-row"><span class="sum-col-label">Nomor Induk Kependudukan (NIK)</span><strong
+                  class="sum-col-val" id="sum-nik">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Nama Lengkap</span><strong class="sum-col-val"
+                  id="sum-nama">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Tempat / Tanggal Lahir</span><strong class="sum-col-val"
+                  id="sum-ttl">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Jenis Kelamin</span><strong class="sum-col-val"
+                  id="sum-jk">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">No. Handphone / WhatsApp</span><strong
+                  class="sum-col-val" id="sum-hp">—</strong></div>
+
+              <div class="sum-group-header" style="margin-top:14px;">DETAIL PERMOHONAN & JADWAL</div>
+              <div class="sum-row"><span class="sum-col-label">Jenis Permohonan BAP</span><strong
+                  class="sum-col-val highlight-badge" id="sum-jenis_permohonan">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Jenis Buku Paspor</span><strong class="sum-col-val"
+                  id="sum-jenis_paspor">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Tujuan Pembuatan</span><span class="sum-col-val"
+                  id="sum-tujuan">—</span></div>
+              <div class="sum-row"><span class="sum-col-label">Jadwal & Sesi Kedatangan</span><strong
+                  class="sum-col-val gold-badge" id="sum-jadwal">—</strong></div>
+              <div class="sum-row"><span class="sum-col-label">Dokumen Terlampir</span><span class="sum-col-val"
+                  id="sum-dok">—</span></div>
+            </div>
+
+            <!-- Declaration & Agreement Box -->
+            <div class="declaration-box">
+              <label class="checkbox-container">
+                <input type="checkbox" id="chkAgreement" onchange="toggleSubmitButtonState()">
+                <span class="checkmark"></span>
+                <span class="chk-label-text">
+                  Saya menyatakan bahwa data dan berkas yang saya berikan adalah <strong>benar dan sah</strong> menurut
+                  hukum. Saya memahami bahwa 1 NIK hanya dapat mendaftar 1 kali dan saya berkewajiban hadir tepat waktu
+                  sesuai jadwal dengan membawa dokumen asli ke Kantor Imigrasi Kelas I TPI Tanjungpinang.
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="form-nav-row">
+            <button type="button" class="btn-form-back" onclick="goStep(3)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              <span>Kembali</span>
+            </button>
+            <button type="button" class="btn-form-submit" id="btnSubmit" onclick="submitForm()" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <span>Kirim Pendaftaran SIPALARUS Sekarang</span>
+            </button>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+     MODAL: RESCHEDULE JADWAL BAP
+═══════════════════════════════════════════════════ -->
+  <div id="rescheduleModal" class="app-modal-backdrop">
+    <div class="modal-dialog-sheet">
+      <div class="modal-drag-pill"></div>
+
+      <div class="modal-dialog-header">
+        <div class="mdh-icon">🔄</div>
+        <div>
+          <h3 class="mdh-title">Ajukan Perubahan Jadwal (Reschedule)</h3>
+          <p class="mdh-sub">Pilih tanggal dan sesi baru. Fasilitas reschedule hanya dapat diajukan <strong>maksimal 1
+              kali</strong>.</p>
+        </div>
+        <button class="btn-close-modal" onclick="closeRescheduleModal()" title="Tutup Modal">✕</button>
+      </div>
+
+      <div class="modal-dialog-body">
+        <!-- Current Schedule Card -->
+        <div class="curr-sched-box">
+          <span class="csb-icon">📅</span>
+          <div>
+            <span class="csb-label">Jadwal Pemeriksaan Saat Ini:</span>
+            <div class="csb-val" id="rsCurrentSched">—</div>
+          </div>
+        </div>
+
+        <div class="rs-warning-box">
+          <span>⚠️</span>
+          <span>Jadwal baru akan berstatus <strong>Menunggu Persetujuan</strong>. Jadwal saat ini tetap berlaku sampai
+            permohonan disetujui petugas.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rsTanggal">Pilih Tanggal Baru (Hari Kerja) *</label>
+          <input type="date" id="rsTanggal" class="form-control" onchange="onRsDateChange()">
+          <div class="field-error-msg" id="err-rsTanggal">Pilih tanggal hari kerja baru</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Pilih Sesi Jam Baru *</label>
+          <div id="rsSlotArea">
+            <div class="slot-loading-state" style="padding:16px;">
+              <p>Silakan tentukan tanggal baru terlebih dahulu</p>
+            </div>
+          </div>
+          <div class="field-error-msg" id="err-rsSlot">Pilih salah satu sesi baru yang berstatus Slot Tersedia</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rsAlasan">Alasan Pengajuan Reschedule *</label>
+          <textarea id="rsAlasan" class="form-control"
+            placeholder="Tuliskan alasan keperluan mendesak Anda (minimal 10 karakter)..."
+            style="min-height:85px;"></textarea>
+          <div class="field-error-msg" id="err-rsAlasan">Alasan reschedule wajib diisi (minimal 10 karakter)</div>
+        </div>
+      </div>
+
+      <div class="modal-dialog-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeRescheduleModal()">Batal</button>
+        <button type="button" class="btn-modal-confirm" id="btnRsSubmit" onclick="submitReschedule()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path
+              d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.08 6.08l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z" />
+          </svg>
+          <span>Kirim Permohonan Reschedule</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     MODAL: LIGHTBOX FULL IMAGE PREVIEW
+═══════════════════════════════════════════════════ -->
+  <div id="imageLightboxModal" class="lightbox-modal-backdrop" onclick="closeImageLightbox()">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <div class="lightbox-header">
+        <span class="lightbox-title" id="lightboxTitle">Lihat Dokumen</span>
+        <button class="lightbox-close-btn" onclick="closeImageLightbox()">✕</button>
+      </div>
+      <div class="lightbox-body">
+        <img id="lightboxImg" src="" alt="Preview Dokumen" class="lightbox-image">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     MODAL: CUSTOM CONFIRMATION DIALOG
+═══════════════════════════════════════════════════ -->
+  <div id="customConfirmModal" class="app-modal-backdrop">
+    <div class="confirm-dialog-card">
+      <div class="confirm-icon" id="confirmDialogIcon">⚠️</div>
+      <h3 class="confirm-title" id="confirmDialogTitle">Konfirmasi</h3>
+      <p class="confirm-message" id="confirmDialogMsg">Apakah Anda yakin?</p>
+      <div class="confirm-btn-row">
+        <button class="btn-confirm-cancel" id="btnConfirmCancel">Batal</button>
+        <button class="btn-confirm-ok" id="btnConfirmOk">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     OVERLAY: LOADING PROCESS
+═══════════════════════════════════════════════════ -->
+  <div id="loadingOverlay" class="loading-full-overlay">
+    <div class="loading-box-card">
+      <div class="loading-ring-wrap">
+        <div class="lr-ring-outer"></div>
+        <div class="lr-ring-inner"></div>
+        <div class="lr-emblem">🦅</div>
+      </div>
+      <h3 class="loading-heading" id="loadingTitle">Memproses Permohonan...</h3>
+      <p class="loading-subheading" id="loadingStatus">Menyiapkan enkripsi data...</p>
+      <div class="loading-dots-bounce"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     OVERLAY: PENDAFTARAN SUKSES & CETAK PDF
+═══════════════════════════════════════════════════ -->
+  <div id="successOverlay" class="success-full-overlay">
+    <div class="success-card-modal">
+      <div class="success-badge-icon">
+        <svg width="48" height="48" viewBox="0 0 52 52" fill="none">
+          <circle cx="26" cy="26" r="26" fill="#D0F0E0" />
+          <path class="success-check-path" d="M14 26L22 34L38 18" stroke="#0A5C35" stroke-width="4"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <h2 class="success-headline">Pendaftaran SIPALARUS Berhasil! 🎉</h2>
+      <p class="success-lead">Berkas permohonan dan jadwal pemeriksaan Anda telah resmi tercatat di sistem SIPALARUS
+        Kantor Imigrasi Kelas I
+        TPI Tanjungpinang.</p>
+
+      <div class="reg-code-display-card">
+        <span class="rcd-label">NOMOR REGISTRASI RESMI</span>
+        <div class="rcd-code" id="regCode">BAP-00000000-0000</div>
+        <button class="btn-copy-code" onclick="copyRegCode()" title="Salin Nomor Registrasi">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <span>Salin Kode</span>
+        </button>
+      </div>
+
+      <div class="success-wa-callout">
+        <div class="pulse-green-dot"></div>
+        <div class="swc-text">
+          <strong>PENTING:</strong> Petugas Seksi Intelijen dan Penindakan Keimigrasian akan menghubungi nomor WhatsApp
+          Anda. Harap hadir 15 menit sebelum sesi dengan membawa seluruh dokumen asli dan bukti pendaftaran.
+        </div>
+      </div>
+
+      <div class="success-btn-group">
+        <button class="btn-download-pdf-gold" onclick="downloadBuktiPDF()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Download Bukti Pendaftaran SIPALARUS (PDF)</span>
+        </button>
+
+        <button class="btn-view-status" onclick="goToDashboard()">
+          <span>Buka Dashboard & Status &rarr;</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     TOAST NOTIFICATION CONTAINER
+═══════════════════════════════════════════════════ -->
+  <div id="toastContainer" class="toast-stack-container"></div>
+
+  <!-- Hidden Canvas for QR Code Generation -->
+  <div id="qrCodeBuffer" style="display:none;"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
