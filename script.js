@@ -53,6 +53,192 @@ const uploadedFiles = {
 };
 
 /* ═══════════════════════════════════════════════════
+   XSS SANITIZATION UTILITY
+═══════════════════════════════════════════════════ */
+function escHtml(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* ═══════════════════════════════════════════════════
+   INTERNATIONAL PHONE NUMBER VALIDATION & NORMALIZATION
+   (Standardized E.164 & Fonnte Destination Specs)
+═══════════════════════════════════════════════════ */
+const INTERNATIONAL_COUNTRY_MAP = [
+  { prefix: '62',  iso: 'ID', minSub: 9, maxSub: 13, name: 'Indonesia', example: '81234567890' },
+  { prefix: '60',  iso: 'MY', minSub: 8, maxSub: 10, name: 'Malaysia', example: '123456789' },
+  { prefix: '65',  iso: 'SG', minSub: 8, maxSub: 8,  name: 'Singapura', example: '81234567' },
+  { prefix: '673', iso: 'BN', minSub: 7, maxSub: 7,  name: 'Brunei', example: '8123456' },
+  { prefix: '63',  iso: 'PH', minSub: 10, maxSub: 10, name: 'Filipina', example: '9123456789' },
+  { prefix: '66',  iso: 'TH', minSub: 8, maxSub: 9,  name: 'Thailand', example: '812345678' },
+  { prefix: '84',  iso: 'VN', minSub: 9, maxSub: 10, name: 'Vietnam', example: '912345678' },
+  { prefix: '81',  iso: 'JP', minSub: 9, maxSub: 10, name: 'Jepang', example: '9012345678' },
+  { prefix: '82',  iso: 'KR', minSub: 9, maxSub: 10, name: 'Korea Selatan', example: '1012345678' },
+  { prefix: '86',  iso: 'CN', minSub: 11, maxSub: 11, name: 'China', example: '13812345678' },
+  { prefix: '852', iso: 'HK', minSub: 8, maxSub: 8,  name: 'Hong Kong', example: '91234567' },
+  { prefix: '886', iso: 'TW', minSub: 9, maxSub: 9,  name: 'Taiwan', example: '912345678' },
+  { prefix: '966', iso: 'SA', minSub: 9, maxSub: 9,  name: 'Arab Saudi', example: '512345678' },
+  { prefix: '971', iso: 'AE', minSub: 9, maxSub: 9,  name: 'UEA', example: '501234567' },
+  { prefix: '61',  iso: 'AU', minSub: 9, maxSub: 9,  name: 'Australia', example: '412345678' },
+  { prefix: '44',  iso: 'GB', minSub: 9, maxSub: 10, name: 'Inggris', example: '7123456789' },
+  { prefix: '1',   iso: 'US', minSub: 10, maxSub: 10, name: 'Amerika Serikat / Kanada', example: '4085551234' },
+  { prefix: '49',  iso: 'DE', minSub: 10, maxSub: 11, name: 'Jerman', example: '15123456789' },
+  { prefix: '33',  iso: 'FR', minSub: 9, maxSub: 9,  name: 'Prancis', example: '612345678' },
+  { prefix: '91',  iso: 'IN', minSub: 10, maxSub: 10, name: 'India', example: '9812345678' },
+  { prefix: '31',  iso: 'NL', minSub: 9, maxSub: 9,  name: 'Belanda', example: '612345678' }
+];
+
+function normalizePhoneNumber(raw, selectedPrefix = '62') {
+  if (!raw || typeof raw !== 'string' || !raw.trim()) {
+    return { valid: false, error: 'Nomor HP/WhatsApp tidak boleh kosong.' };
+  }
+  const s = raw.trim();
+  // Validasi karakter yang diizinkan (angka, spasi, +, -, (, ), .)
+  if (/[^\d\s\+\-\(\)\.]/.test(s)) {
+    return { valid: false, error: 'Nomor telepon hanya boleh berisi angka, tanda plus (+), spasi, tanda hubung (-), dan tanda kurung.' };
+  }
+
+  const hasPlus = s.startsWith('+');
+  const digits = s.replace(/\D/g, '');
+  if (!digits) {
+    return { valid: false, error: 'Nomor telepon tidak berisi angka yang valid.' };
+  }
+
+  let finalDigits = digits;
+
+  // Jika input pengguna eksplisit menggunakan tanda plus (+) atau awalan internasional
+  if (hasPlus) {
+    // Pengguna memasukkan nomor internasional lengkap secara mandiri
+    finalDigits = digits;
+  } else if (selectedPrefix && selectedPrefix !== 'other') {
+    // Mode dengan selektor negara aktif
+    if (selectedPrefix === '62') {
+      if (finalDigits.startsWith('62')) {
+        // sudah memiliki 62
+      } else if (finalDigits.startsWith('0')) {
+        finalDigits = '62' + finalDigits.slice(1);
+      } else if (finalDigits.startsWith('8')) {
+        finalDigits = '62' + finalDigits;
+      } else {
+        finalDigits = '62' + finalDigits;
+      }
+    } else {
+      // Negara non-Indonesia: jika pengguna mengetik 0 di depan, hilangkan trunk zero lokal
+      if (finalDigits.startsWith(selectedPrefix)) {
+        // sudah diawali kode negara
+      } else if (finalDigits.startsWith('0')) {
+        finalDigits = selectedPrefix + finalDigits.slice(1);
+      } else {
+        finalDigits = selectedPrefix + finalDigits;
+      }
+    }
+  } else {
+    // Selektor 'other' tanpa tanda +
+    if (finalDigits.startsWith('08')) {
+      finalDigits = '62' + finalDigits.slice(1);
+    } else if (finalDigits.startsWith('0')) {
+      return { valid: false, error: 'Untuk negara lain, mohon gunakan awalan kode negara internasional (contoh: +60... atau +65...).' };
+    }
+  }
+
+  // Cari kecocokan aturan negara (prefix terpanjang didahulukan)
+  const sorted = [...INTERNATIONAL_COUNTRY_MAP].sort((a, b) => b.prefix.length - a.prefix.length);
+  let matched = null;
+  for (const c of sorted) {
+    if (finalDigits.startsWith(c.prefix)) {
+      const sub = finalDigits.slice(c.prefix.length);
+      if (sub.length >= c.minSub && sub.length <= c.maxSub) {
+        matched = { ...c, sub };
+        break;
+      }
+    }
+  }
+
+  // Jika cocok dengan aturan negara Indonesia (+62)
+  if (finalDigits.startsWith('62')) {
+    const sub = finalDigits.slice(2);
+    if (!sub.startsWith('8')) {
+      return { valid: false, error: 'Nomor WhatsApp Indonesia harus berupa nomor handphone yang diawali angka 8 (contoh: 0812... / +62812...).' };
+    }
+    if (sub.length < 9 || sub.length > 13) {
+      return { valid: false, error: 'Nomor WhatsApp Indonesia harus memiliki 10 hingga 14 digit angka (contoh: 081234567890).' };
+    }
+    return {
+      valid: true,
+      fonnte: finalDigits,
+      e164: '+' + finalDigits,
+      iso: 'ID',
+      countryName: 'Indonesia',
+      formatted: '+62 ' + sub.replace(/(\d{3,4})(\d{3,4})?(\d+)?/, (_, p1, p2, p3) => [p1, p2, p3].filter(Boolean).join('-'))
+    };
+  }
+
+  if (matched) {
+    return {
+      valid: true,
+      fonnte: finalDigits,
+      e164: '+' + finalDigits,
+      iso: matched.iso,
+      countryName: matched.name,
+      formatted: `+${matched.prefix} ${matched.sub}`
+    };
+  }
+
+  // Fallback E.164 umum konservatif (panjang total 8 - 15 digit angka)
+  if (finalDigits.length >= 8 && finalDigits.length <= 15) {
+    return {
+      valid: true,
+      fonnte: finalDigits,
+      e164: '+' + finalDigits,
+      iso: 'INTL',
+      countryName: 'Internasional',
+      formatted: '+' + finalDigits
+    };
+  }
+
+  return { valid: false, error: 'Panjang nomor telepon internasional tidak valid (minimal 8 digit, maksimal 15 digit E.164).' };
+}
+
+function onHpCountryChange() {
+  const sel = document.getElementById('hpCountry');
+  const input = document.getElementById('hp');
+  const hint = document.getElementById('hp-hint');
+  if (!sel || !input) return;
+
+  const opt = sel.options[sel.selectedIndex];
+  const placeholder = opt?.getAttribute('data-placeholder') || '08xxxxxxxxxx';
+  const iso = opt?.getAttribute('data-iso') || 'ID';
+  const prefix = sel.value;
+
+  input.placeholder = placeholder;
+
+  if (hint) {
+    if (iso === 'ID') {
+      hint.textContent = 'Contoh Indonesia: 081234567890 atau 81234567890. Sistem otomatis memproses notifikasi WhatsApp.';
+    } else if (iso === 'OTHER') {
+      hint.textContent = 'Masukkan nomor internasional lengkap diawali tanda plus dan kode negara (contoh: +60123456789).';
+    } else {
+      hint.textContent = `Pilihan: ${opt.text}. Contoh format: ${placeholder} (atau ketik langsung dengan awalan +${prefix}).`;
+    }
+  }
+
+  // Jika input sudah terisi dan user mengganti negara, lakukan revalidasi jika di step 1
+  if (input.value.trim() && currentStep === 1) {
+    const norm = normalizePhoneNumber(input.value.trim(), prefix);
+    const errEl = document.getElementById('err-hp');
+    if (!norm.valid) {
+      input.classList.add('is-invalid');
+      if (errEl) {
+        errEl.textContent = norm.error;
+        errEl.classList.add('show');
+      }
+    } else {
+      input.classList.remove('is-invalid');
+      if (errEl) errEl.classList.remove('show');
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    TIMEZONE (WIB / UTC+7) & DATE UTILITIES (FIX BUG)
 ═══════════════════════════════════════════════════ */
 
@@ -141,6 +327,7 @@ function saveDraft() {
       tempatLahir: document.getElementById('tempatLahir')?.value || '',
       tanggalLahir: document.getElementById('tanggalLahir')?.value || '',
       jenisKelamin: document.getElementById('jenisKelamin')?.value || '',
+      hpCountry: document.getElementById('hpCountry')?.value || '62',
       hp: document.getElementById('hp')?.value || '',
       jenisPermohonan: document.getElementById('jenisPermohonan')?.value || '',
       jenisPaspor: document.getElementById('jenisPaspor')?.value || '',
@@ -166,6 +353,10 @@ function restoreDraftIfAvailable() {
     if (draft.tempatLahir && document.getElementById('tempatLahir')) document.getElementById('tempatLahir').value = draft.tempatLahir;
     if (draft.tanggalLahir && document.getElementById('tanggalLahir')) document.getElementById('tanggalLahir').value = draft.tanggalLahir;
     if (draft.jenisKelamin && document.getElementById('jenisKelamin')) document.getElementById('jenisKelamin').value = draft.jenisKelamin;
+    if (draft.hpCountry && document.getElementById('hpCountry')) {
+      document.getElementById('hpCountry').value = draft.hpCountry;
+      onHpCountryChange();
+    }
     if (draft.hp && document.getElementById('hp')) document.getElementById('hp').value = draft.hp;
     if (draft.jenisPermohonan && document.getElementById('jenisPermohonan')) {
       document.getElementById('jenisPermohonan').value = draft.jenisPermohonan;
@@ -226,8 +417,8 @@ function showToast(type, title, message, duration = 4000) {
   item.innerHTML = `
     <div class="tmi-icon">${icons[type] || '🔔'}</div>
     <div class="tmi-content">
-      <div class="tmi-title">${title}</div>
-      <div class="tmi-msg">${message}</div>
+      <div class="tmi-title">${escHtml(title)}</div>
+      <div class="tmi-msg">${escHtml(message)}</div>
     </div>
   `;
 
@@ -657,7 +848,7 @@ async function doQuickTrack() {
   resBox.innerHTML = `
     <div style="text-align:center;padding:16px;">
       <div class="dash-spinner"></div>
-      <p style="font-size:13px;color:var(--text-secondary);">Mencari data permohonan ${query}...</p>
+      <p style="font-size:13px;color:var(--text-secondary);">Mencari data permohonan ${escHtml(query)}...</p>
     </div>
   `;
 
@@ -672,14 +863,14 @@ async function doQuickTrack() {
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
           <div>
             <div style="font-size:11px;color:var(--gold-400);font-weight:700;letter-spacing:0.06em;">DATA DITEMUKAN</div>
-            <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:white;">${data.no_registrasi || 'BAP-00000000-0000'}</div>
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:white;">${escHtml(data.no_registrasi) || 'BAP-00000000-0000'}</div>
           </div>
           ${statusBadge}
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;padding:14px;background:rgba(255,255,255,0.04);border-radius:10px;">
-          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Nama Pemohon:</span><strong style="font-size:13px;color:white;">${data.nama || '-'}</strong></div>
-          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Status:</span><span style="font-size:12px;color:white;">${data.status || '-'}</span></div>
-          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Jadwal Pemeriksaan:</span><strong style="font-size:13px;color:var(--gold-400);">${tglFmt}, ${data.jam || '-'}</strong></div>
+          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Nama Pemohon:</span><strong style="font-size:13px;color:white;">${escHtml(data.nama) || '-'}</strong></div>
+          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Status:</span><span style="font-size:12px;color:white;">${escHtml(data.status) || '-'}</span></div>
+          <div><span style="font-size:11px;color:var(--text-muted);display:block;">Jadwal Pemeriksaan:</span><strong style="font-size:13px;color:var(--gold-400);">${escHtml(tglFmt)}, ${escHtml(data.jam) || '-'}</strong></div>
           <div><span style="font-size:11px;color:var(--text-muted);display:block;">Lokasi:</span><span style="font-size:12px;color:var(--text-secondary);">Kanim Kelas I TPI Tanjungpinang</span></div>
         </div>
         <div style="margin-top:14px;display:flex;justify-content:flex-end;">
@@ -693,7 +884,7 @@ async function doQuickTrack() {
         <div style="text-align:center;padding:14px;">
           <div style="font-size:26px;margin-bottom:6px;">⚠️</div>
           <strong style="color:white;font-size:14px;">Permohonan Tidak Ditemukan</strong>
-          <p style="font-size:12.5px;color:var(--text-secondary);margin-top:4px;">Tidak ada data terdaftar untuk "${query}". Pastikan nomor registrasi (contoh: BAP-20261009-0001) benar.</p>
+          <p style="font-size:12.5px;color:var(--text-secondary);margin-top:4px;">Tidak ada data terdaftar untuk "${escHtml(query)}". Pastikan nomor registrasi (contoh: BAP-20261009-0001) benar.</p>
         </div>
       `;
     }
@@ -876,7 +1067,7 @@ function renderRegCard(data) {
         <span style="font-size:18px;">✅</span>
         <div>
           <strong style="color: #34d399;">Jadwal Pemeriksaan Telah Dikonfirmasi Petugas</strong>
-          <p>Berkas permohonan Anda telah diverifikasi dan disetujui. Silakan hadir di Kantor Imigrasi Kelas I TPI Tanjungpinang pada: <strong>${tglFormatted}, ${data.jam || '-'}</strong>. Harap hadir 15 menit sebelum waktu kedatangan dan membawa seluruh dokumen fisik asli.</p>
+          <p>Berkas permohonan Anda telah diverifikasi dan disetujui. Silakan hadir di Kantor Imigrasi Kelas I TPI Tanjungpinang pada: <strong>${escHtml(tglFormatted)}, ${escHtml(data.jam) || '-'}</strong>. Harap hadir 15 menit sebelum waktu kedatangan dan membawa seluruh dokumen fisik asli.</p>
         </div>
       </div>
     `;
@@ -889,7 +1080,7 @@ function renderRegCard(data) {
         <span style="font-size:18px;">📝</span>
         <div>
           <strong style="color: var(--primary-light, #60a5fa);">Catatan Petugas:</strong>
-          <p style="margin-top: 2px;">${data.note}</p>
+          <p style="margin-top: 2px;">${escHtml(data.note)}</p>
         </div>
       </div>
     `;
@@ -903,7 +1094,7 @@ function renderRegCard(data) {
         <span style="font-size:18px;">⏳</span>
         <div>
           <strong>Permintaan Reschedule Sedang Ditinjau Petugas</strong>
-          <p>Jadwal baru yang diajukan: <strong>${rsTgl}, ${data.reschedule_jam || '-'}</strong>. Harap tunggu konfirmasi sebelum datang.</p>
+          <p>Jadwal baru yang diajukan: <strong>${escHtml(rsTgl)}, ${escHtml(data.reschedule_jam) || '-'}</strong>. Harap tunggu konfirmasi sebelum datang.</p>
         </div>
       </div>
     `;
@@ -937,7 +1128,7 @@ function renderRegCard(data) {
         <span style="font-size:18px;">📄</span>
         <div>
           <strong>Jadwal Pengambilan Surat Keputusan Hasil BAP</strong>
-          <p>Pemeriksaan BAP telah selesai. Mohon hadir kembali ke Kantor Imigrasi untuk mengambil surat keputusan Berita Acara Pemeriksaan pada: <strong>${fuTgl.toUpperCase()}</strong>, bertempat di Ruang Inteldakim Kantor Imigrasi Kelas I TPI Tanjungpinang.</p>
+          <p>Pemeriksaan BAP telah selesai. Mohon hadir kembali ke Kantor Imigrasi untuk mengambil surat keputusan Berita Acara Pemeriksaan pada: <strong>${escHtml(fuTgl.toUpperCase())}</strong>, bertempat di Ruang Inteldakim Kantor Imigrasi Kelas I TPI Tanjungpinang.</p>
         </div>
       </div>
     `;
@@ -960,7 +1151,7 @@ function renderRegCard(data) {
       <div class="reg-card-header">
         <div>
           <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;">Nomor Registrasi Resmi</span>
-          <div class="rc-code">${data.no_registrasi || 'BAP-00000000-0000'}</div>
+          <div class="rc-code">${escHtml(data.no_registrasi) || 'BAP-00000000-0000'}</div>
         </div>
         ${getStatusBadgeHtml(status)}
       </div>
@@ -972,14 +1163,14 @@ function renderRegCard(data) {
 
       <div class="reg-card-body">
         <div class="reg-grid-details">
-          <div class="rg-item"><span class="rg-label">Nama Pemohon</span><span class="rg-val">${data.nama || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">Jenis Permohonan</span><span class="rg-val">${data.jenis_permohonan || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">Jenis Buku Paspor</span><span class="rg-val">${data.jenis_paspor || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">Jadwal Pemeriksaan</span><span class="rg-val gold">${tglFormatted}</span></div>
-          <div class="rg-item"><span class="rg-label">Sesi Kedatangan</span><span class="rg-val gold">${data.jam || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">No. WhatsApp</span><span class="rg-val">${data.hp || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">Tempat / Tgl Lahir</span><span class="rg-val">${data.ttl || '-'}</span></div>
-          <div class="rg-item"><span class="rg-label">Waktu Pendaftaran</span><span class="rg-val">${data.waktu_daftar || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Nama Pemohon</span><span class="rg-val">${escHtml(data.nama) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Jenis Permohonan</span><span class="rg-val">${escHtml(data.jenis_permohonan) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Jenis Buku Paspor</span><span class="rg-val">${escHtml(data.jenis_paspor) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Jadwal Pemeriksaan</span><span class="rg-val gold">${escHtml(tglFormatted)}</span></div>
+          <div class="rg-item"><span class="rg-label">Sesi Kedatangan</span><span class="rg-val gold">${escHtml(data.jam) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">No. WhatsApp</span><span class="rg-val">${escHtml(data.hp) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Tempat / Tgl Lahir</span><span class="rg-val">${escHtml(data.ttl) || '-'}</span></div>
+          <div class="rg-item"><span class="rg-label">Waktu Pendaftaran</span><span class="rg-val">${escHtml(data.waktu_daftar) || '-'}</span></div>
           <div class="rg-item"><span class="rg-label">Status Reschedule</span><span class="rg-val">${rsCount > 0 ? `${rsCount}x Digunakan` : 'Belum Pernah'}</span></div>
         </div>
       </div>
@@ -1121,16 +1312,16 @@ function renderRsSlotCards(dateStr) {
       cls += ' disabled';
       if (isClosed) {
         cls += ' closed';
-        badge = '<span class="sc-badge unavail">Slot Tidak Tersedia</span>';
-        statusText = 'Slot Tidak Tersedia (Ditutup Petugas)';
+        badge = '<span class="sc-badge unavail">Kuota Tidak Tersedia</span>';
+        statusText = 'Kuota Tidak Tersedia (Ditutup Petugas)';
       } else if (isPast) {
         cls += ' past';
         badge = '<span class="sc-badge past">Selesai</span>';
-        statusText = 'Slot Tidak Tersedia (Sesi Berakhir)';
+        statusText = 'Kuota Tidak Tersedia (Sesi Berakhir)';
       } else {
         cls += ' full';
-        badge = '<span class="sc-badge unavail">Slot Tidak Tersedia</span>';
-        statusText = 'Slot Tidak Tersedia (Sudah Terisi)';
+        badge = '<span class="sc-badge unavail">Kuota Penuh</span>';
+        statusText = 'Kuota Penuh (Sudah Terisi)';
       }
       statusDotClass = 'unavailable';
     } else {
@@ -1138,10 +1329,10 @@ function renderRsSlotCards(dateStr) {
         cls += ' selected';
         badge = '<span class="sc-badge sel">Dipilih</span>';
       } else {
-        badge = '<span class="sc-badge avail">Slot Tersedia</span>';
+        badge = '<span class="sc-badge avail">Kuota Tersedia</span>';
       }
       clickFn = `onclick="pickRsSlot(this,'${s.id}','${s.label}')"`;
-      statusText = 'Slot Tersedia';
+      statusText = 'Kuota Tersedia';
     }
 
     return `
@@ -1168,7 +1359,7 @@ function pickRsSlot(el, id, label) {
     const b = c.querySelector('.sc-badge');
     if (b && !c.classList.contains('disabled')) {
       b.className = 'sc-badge avail';
-      b.textContent = 'Slot Tersedia';
+      b.textContent = 'Kuota Tersedia';
     }
   });
   el.classList.add('selected');
@@ -1323,7 +1514,16 @@ function validateStep(step) {
     setErr('tempatLahir', 'err-tempatLahir', (document.getElementById('tempatLahir')?.value.trim() || '').length >= 2);
     setErr('tanggalLahir', 'err-tanggalLahir', (document.getElementById('tanggalLahir')?.value || '') !== '');
     setErr('jenisKelamin', 'err-jenisKelamin', (document.getElementById('jenisKelamin')?.value || '') !== '');
-    setErr('hp', 'err-hp', (document.getElementById('hp')?.value.trim() || '').length >= 8);
+
+    const hpVal = document.getElementById('hp')?.value.trim() || '';
+    const hpPrefix = document.getElementById('hpCountry')?.value || '62';
+    const hpNorm = normalizePhoneNumber(hpVal, hpPrefix);
+    const errHpEl = document.getElementById('err-hp');
+    if (!hpNorm.valid && errHpEl) {
+      errHpEl.textContent = hpNorm.error;
+    }
+    setErr('hp', 'err-hp', hpNorm.valid);
+
     setErr('jenisPermohonan', 'err-jenis_permohonan', (document.getElementById('jenisPermohonan')?.value || '') !== '');
     setErr('jenisPaspor', 'err-jenis_paspor', (document.getElementById('jenisPaspor')?.value || '') !== '');
     setErr('tujuan', 'err-tujuan', (document.getElementById('tujuan')?.value.trim() || '').length >= 5);
@@ -1579,16 +1779,16 @@ function renderSlotGrid(dateStr) {
       cls += ' disabled';
       if (isClosed) {
         cls += ' closed';
-        badge = '<span class="sc-badge unavail">Slot Tidak Tersedia</span>';
-        statusText = 'Slot Tidak Tersedia (Ditutup Petugas)';
+        badge = '<span class="sc-badge unavail">Kuota Tidak Tersedia</span>';
+        statusText = 'Kuota Tidak Tersedia (Ditutup Petugas)';
       } else if (isPast) {
         cls += ' past';
         badge = '<span class="sc-badge past">Selesai</span>';
-        statusText = 'Slot Tidak Tersedia (Sesi Berakhir)';
+        statusText = 'Kuota Tidak Tersedia (Sesi Berakhir)';
       } else {
         cls += ' full';
-        badge = '<span class="sc-badge unavail">Slot Tidak Tersedia</span>';
-        statusText = 'Slot Tidak Tersedia (Sudah Terisi)';
+        badge = '<span class="sc-badge unavail">Kuota Penuh</span>';
+        statusText = 'Kuota Penuh (Sudah Terisi)';
       }
       statusDotClass = 'unavailable';
     } else {
@@ -1596,10 +1796,10 @@ function renderSlotGrid(dateStr) {
         cls += ' selected';
         badge = '<span class="sc-badge sel">Dipilih</span>';
       } else {
-        badge = '<span class="sc-badge avail">Slot Tersedia</span>';
+        badge = '<span class="sc-badge avail">Kuota Tersedia</span>';
       }
       clickFn = `onclick="pickSlot(this,'${s.id}','${s.label}')"`;
-      statusText = 'Slot Tersedia';
+      statusText = 'Kuota Tersedia';
     }
 
     return `
@@ -1626,7 +1826,7 @@ function pickSlot(el, id, label) {
     const b = c.querySelector('.sc-badge');
     if (b && !c.classList.contains('disabled')) {
       b.className = 'sc-badge avail';
-      b.textContent = 'Slot Tersedia';
+      b.textContent = 'Kuota Tersedia';
     }
   });
   el.classList.add('selected');
@@ -1908,7 +2108,12 @@ function fillSummaryTable() {
   setVal('sum-ttl', ttlFmt);
 
   setVal('sum-jk', document.getElementById('jenisKelamin')?.value);
-  setVal('sum-hp', document.getElementById('hp')?.value.trim());
+
+  const rawHpVal = document.getElementById('hp')?.value.trim() || '';
+  const hpCountryVal = document.getElementById('hpCountry')?.value || '62';
+  const normHpSum = normalizePhoneNumber(rawHpVal, hpCountryVal);
+  setVal('sum-hp', normHpSum.valid ? `${normHpSum.formatted || normHpSum.e164} (${normHpSum.countryName || 'Internasional'})` : rawHpVal);
+
   setVal('sum-jenis_permohonan', document.getElementById('jenisPermohonan')?.value);
   setVal('sum-jenis_paspor', document.getElementById('jenisPaspor')?.value);
   setVal('sum-tujuan', document.getElementById('tujuan')?.value.trim());
@@ -1982,6 +2187,18 @@ async function submitForm() {
     const jPermohonan = document.getElementById('jenisPermohonan').value;
     const jPaspor = document.getElementById('jenisPaspor').value;
 
+    const rawSubmitHp = document.getElementById('hp')?.value.trim() || '';
+    const countryPrefixSubmit = document.getElementById('hpCountry')?.value || '62';
+    const normSubmitHp = normalizePhoneNumber(rawSubmitHp, countryPrefixSubmit);
+    if (!normSubmitHp.valid) {
+      hideLoading();
+      btnSubmit.disabled = false;
+      showToast('error', 'Nomor WhatsApp Tidak Valid', normSubmitHp.error || 'Periksa kembali nomor WhatsApp Anda.');
+      currentStep = 1;
+      updateStepperUI();
+      return;
+    }
+
     registrationData = {
       nama: document.getElementById('nama').value.trim(),
       nik: sess.nik,
@@ -1989,7 +2206,9 @@ async function submitForm() {
       tanggalLahir: tglLahir,
       ttl: ttlStr,
       jk: document.getElementById('jenisKelamin').value,
-      hp: document.getElementById('hp').value.trim(),
+      hp: normSubmitHp.e164, // Disimpan dalam standar internasional E.164 (+62... / +60... / +65...)
+      hp_raw: rawSubmitHp,
+      hp_country: normSubmitHp.iso,
       jenisPermohonan: jPermohonan,
       jenis_permohonan: jPermohonan,
       jenisPaspor: jPaspor,
@@ -2502,8 +2721,38 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Listen to form input changes for auto-draft
-  ['nama', 'tempatLahir', 'tanggalLahir', 'jenisKelamin', 'hp', 'jenisPermohonan', 'jenisPaspor', 'tujuan'].forEach(id => {
+  ['nama', 'tempatLahir', 'tanggalLahir', 'jenisKelamin', 'hpCountry', 'hp', 'jenisPermohonan', 'jenisPaspor', 'tujuan'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', () => saveDraft());
+    document.getElementById(id)?.addEventListener('change', () => saveDraft());
   });
+
+  // Realtime phone input validation handler
+  const hpInputEl = document.getElementById('hp');
+  if (hpInputEl) {
+    const validateHpLive = () => {
+      const val = hpInputEl.value.trim();
+      if (!val) return;
+      const prefix = document.getElementById('hpCountry')?.value || '62';
+      const norm = normalizePhoneNumber(val, prefix);
+      const errEl = document.getElementById('err-hp');
+      if (!norm.valid) {
+        hpInputEl.classList.add('is-invalid');
+        if (errEl) {
+          errEl.textContent = norm.error;
+          errEl.classList.add('show');
+        }
+      } else {
+        hpInputEl.classList.remove('is-invalid');
+        if (errEl) errEl.classList.remove('show');
+      }
+    };
+    hpInputEl.addEventListener('blur', validateHpLive);
+    hpInputEl.addEventListener('input', () => {
+      const errEl = document.getElementById('err-hp');
+      if (errEl && errEl.classList.contains('show')) {
+        validateHpLive();
+      }
+    });
+  }
 });
 

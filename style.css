@@ -2039,6 +2039,38 @@ select.form-control {
   margin-top: 4px;
 }
 
+.phone-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.phone-country-select {
+  flex: 0 0 170px;
+  min-width: 140px;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 10px 30px 10px 12px;
+  background-position: right 10px center;
+  border-radius: var(--r-md);
+}
+
+.phone-number-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .phone-input-group {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .phone-country-select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
 .btn-auth-submit {
   width: 100%;
   background: var(--primary);
