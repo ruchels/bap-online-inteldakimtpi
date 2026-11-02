@@ -64,27 +64,27 @@ function escHtml(s) {
    (Standardized E.164 & Fonnte Destination Specs)
 ═══════════════════════════════════════════════════ */
 const INTERNATIONAL_COUNTRY_MAP = [
-  { prefix: '62',  iso: 'ID', minSub: 9, maxSub: 13, name: 'Indonesia', example: '81234567890' },
-  { prefix: '60',  iso: 'MY', minSub: 8, maxSub: 10, name: 'Malaysia', example: '123456789' },
-  { prefix: '65',  iso: 'SG', minSub: 8, maxSub: 8,  name: 'Singapura', example: '81234567' },
-  { prefix: '673', iso: 'BN', minSub: 7, maxSub: 7,  name: 'Brunei', example: '8123456' },
-  { prefix: '63',  iso: 'PH', minSub: 10, maxSub: 10, name: 'Filipina', example: '9123456789' },
-  { prefix: '66',  iso: 'TH', minSub: 8, maxSub: 9,  name: 'Thailand', example: '812345678' },
-  { prefix: '84',  iso: 'VN', minSub: 9, maxSub: 10, name: 'Vietnam', example: '912345678' },
-  { prefix: '81',  iso: 'JP', minSub: 9, maxSub: 10, name: 'Jepang', example: '9012345678' },
-  { prefix: '82',  iso: 'KR', minSub: 9, maxSub: 10, name: 'Korea Selatan', example: '1012345678' },
-  { prefix: '86',  iso: 'CN', minSub: 11, maxSub: 11, name: 'China', example: '13812345678' },
-  { prefix: '852', iso: 'HK', minSub: 8, maxSub: 8,  name: 'Hong Kong', example: '91234567' },
-  { prefix: '886', iso: 'TW', minSub: 9, maxSub: 9,  name: 'Taiwan', example: '912345678' },
-  { prefix: '966', iso: 'SA', minSub: 9, maxSub: 9,  name: 'Arab Saudi', example: '512345678' },
-  { prefix: '971', iso: 'AE', minSub: 9, maxSub: 9,  name: 'UEA', example: '501234567' },
-  { prefix: '61',  iso: 'AU', minSub: 9, maxSub: 9,  name: 'Australia', example: '412345678' },
-  { prefix: '44',  iso: 'GB', minSub: 9, maxSub: 10, name: 'Inggris', example: '7123456789' },
-  { prefix: '1',   iso: 'US', minSub: 10, maxSub: 10, name: 'Amerika Serikat / Kanada', example: '4085551234' },
-  { prefix: '49',  iso: 'DE', minSub: 10, maxSub: 11, name: 'Jerman', example: '15123456789' },
-  { prefix: '33',  iso: 'FR', minSub: 9, maxSub: 9,  name: 'Prancis', example: '612345678' },
-  { prefix: '91',  iso: 'IN', minSub: 10, maxSub: 10, name: 'India', example: '9812345678' },
-  { prefix: '31',  iso: 'NL', minSub: 9, maxSub: 9,  name: 'Belanda', example: '612345678' }
+  { prefix: '62', iso: 'ID', minSub: 9, maxSub: 13, name: 'Indonesia', example: '81234567890' },
+  { prefix: '60', iso: 'MY', minSub: 8, maxSub: 10, name: 'Malaysia', example: '123456789' },
+  { prefix: '65', iso: 'SG', minSub: 8, maxSub: 8, name: 'Singapura', example: '81234567' },
+  { prefix: '673', iso: 'BN', minSub: 7, maxSub: 7, name: 'Brunei', example: '8123456' },
+  { prefix: '63', iso: 'PH', minSub: 10, maxSub: 10, name: 'Filipina', example: '9123456789' },
+  { prefix: '66', iso: 'TH', minSub: 8, maxSub: 9, name: 'Thailand', example: '812345678' },
+  { prefix: '84', iso: 'VN', minSub: 9, maxSub: 10, name: 'Vietnam', example: '912345678' },
+  { prefix: '81', iso: 'JP', minSub: 9, maxSub: 10, name: 'Jepang', example: '9012345678' },
+  { prefix: '82', iso: 'KR', minSub: 9, maxSub: 10, name: 'Korea Selatan', example: '1012345678' },
+  { prefix: '86', iso: 'CN', minSub: 11, maxSub: 11, name: 'China', example: '13812345678' },
+  { prefix: '852', iso: 'HK', minSub: 8, maxSub: 8, name: 'Hong Kong', example: '91234567' },
+  { prefix: '886', iso: 'TW', minSub: 9, maxSub: 9, name: 'Taiwan', example: '912345678' },
+  { prefix: '966', iso: 'SA', minSub: 9, maxSub: 9, name: 'Arab Saudi', example: '512345678' },
+  { prefix: '971', iso: 'AE', minSub: 9, maxSub: 9, name: 'UEA', example: '501234567' },
+  { prefix: '61', iso: 'AU', minSub: 9, maxSub: 9, name: 'Australia', example: '412345678' },
+  { prefix: '44', iso: 'GB', minSub: 9, maxSub: 10, name: 'Inggris', example: '7123456789' },
+  { prefix: '1', iso: 'US', minSub: 10, maxSub: 10, name: 'Amerika Serikat / Kanada', example: '4085551234' },
+  { prefix: '49', iso: 'DE', minSub: 10, maxSub: 11, name: 'Jerman', example: '15123456789' },
+  { prefix: '33', iso: 'FR', minSub: 9, maxSub: 9, name: 'Prancis', example: '612345678' },
+  { prefix: '91', iso: 'IN', minSub: 10, maxSub: 10, name: 'India', example: '9812345678' },
+  { prefix: '31', iso: 'NL', minSub: 9, maxSub: 9, name: 'Belanda', example: '612345678' }
 ];
 
 function normalizePhoneNumber(raw, selectedPrefix = '62') {
@@ -313,7 +313,7 @@ function clearSession() {
   localStorage.removeItem(SESSION_KEY);
   try {
     localStorage.removeItem('bap_local_records_v2');
-  } catch {}
+  } catch { }
 }
 function isLoggedIn() {
   return getSession() !== null;
@@ -2374,7 +2374,7 @@ async function generatePDF(d) {
     let logoDataUrl = null;
     try {
       logoDataUrl = await getSipalarusLogoDataUrl();
-    } catch (_) {}
+    } catch (_) { }
 
     const logoSize = 18;
     const hasLogo = !!logoDataUrl;
@@ -2406,7 +2406,7 @@ async function generatePDF(d) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(...cSub);
-    doc.text('Seksi Intelijen dan Penindakan Keimigrasian · Jl. Teuku Umar No. 25, Kota Tanjungpinang', kopTextX, y);
+    doc.text('Seksi Intelijen dan Penindakan Keimigrasian · Jl. Ahmad Yani No.31, Sei Jang, Kec. Tj. Pinang Kota, Kota Tanjung Pinang', kopTextX, y);
     y += 6.5;
 
     // Double rule (Navy & Gold)
