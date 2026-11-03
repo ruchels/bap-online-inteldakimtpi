@@ -1313,7 +1313,7 @@ function renderRsSlotCards(dateStr) {
       if (isClosed) {
         cls += ' closed';
         badge = '<span class="sc-badge unavail">Kuota Tidak Tersedia</span>';
-        statusText = 'Kuota Tidak Tersedia (Ditutup Petugas)';
+        statusText = 'Kuota Tidak Tersedia';
       } else if (isPast) {
         cls += ' past';
         badge = '<span class="sc-badge past">Selesai</span>';
@@ -1780,7 +1780,7 @@ function renderSlotGrid(dateStr) {
       if (isClosed) {
         cls += ' closed';
         badge = '<span class="sc-badge unavail">Kuota Tidak Tersedia</span>';
-        statusText = 'Kuota Tidak Tersedia (Ditutup Petugas)';
+        statusText = 'Kuota Tidak Tersedia';
       } else if (isPast) {
         cls += ' past';
         badge = '<span class="sc-badge past">Selesai</span>';
