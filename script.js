@@ -592,6 +592,7 @@ async function showUserDashboard() {
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   startDashboardAutoRefresh();
+  await loadUserPhoneStatus();
   await loadUserRegistration();
 }
 
@@ -771,9 +772,50 @@ async function doLogin() {
   }
 }
 
+function onRegHpCountryChange() {
+  const sel = document.getElementById('regHpCountry');
+  const inp = document.getElementById('regHp');
+  if (!sel || !inp) return;
+  const opt = sel.options[sel.selectedIndex];
+  inp.placeholder = opt.dataset.placeholder || 'Nomor WhatsApp';
+}
+
+function onProfHpCountryChange() {
+  const sel = document.getElementById('profHpCountry');
+  const inp = document.getElementById('profNewHp');
+  if (!sel || !inp) return;
+  const opt = sel.options[sel.selectedIndex];
+  inp.placeholder = opt.dataset.placeholder || 'Nomor WhatsApp';
+}
+
+/* ── Runtime State for Registration OTP & Password Recovery ── */
+let regDraftData = null;
+let regOtpTimer = null;
+let regResendTimer = null;
+
+let fpState = {
+  nik: '',
+  maskedPhone: '',
+  candidateFromBAP: false,
+  resetToken: '',
+  timer: null,
+  resendTimer: null,
+};
+
+let profPhoneState = {
+  newPhone: '',
+  timer: null,
+  resendTimer: null,
+};
+
+/* ═══════════════════════════════════════════════════
+   REGISTRATION WITH WHATSAPP OTP VERIFICATION
+═══════════════════════════════════════════════════ */
 async function doRegister() {
   const nama = document.getElementById('regNama').value.trim();
   const nik = document.getElementById('regNik').value.trim();
+  const rawHp = document.getElementById('regHp').value.trim();
+  const hpCountry = document.getElementById('regHpCountry')?.value || '62';
   const tglLahir = document.getElementById('regTglLahir').value;
   const jk = document.getElementById('regJK').value;
   const password = document.getElementById('regPassword').value;
@@ -783,55 +825,849 @@ async function doRegister() {
     const el = document.getElementById('err-' + id);
     const inp = document.getElementById(id);
     if (!cond) {
-      el.classList.add('show');
-      inp.classList.add('is-invalid');
+      if (el) el.classList.add('show');
+      if (inp) inp.classList.add('is-invalid');
       valid = false;
     } else {
-      el.classList.remove('show');
-      inp.classList.remove('is-invalid');
+      if (el) el.classList.remove('show');
+      if (inp) inp.classList.remove('is-invalid');
     }
   };
 
+  const normHp = normalizePhoneNumber(rawHp, hpCountry);
+
   setErr('regNama', nama.length >= 3);
   setErr('regNik', nik.length === 16 && /^\d+$/.test(nik));
+  setErr('regHp', normHp.valid);
   setErr('regTglLahir', tglLahir !== '');
   setErr('regJK', jk !== '');
-  setErr('regPassword', password.length >= 6);
-  if (!valid) return;
+  setErr('regPassword', password.length >= 8);
+
+  if (!valid) {
+    if (!normHp.valid && normHp.error) {
+      const errEl = document.getElementById('err-regHp');
+      if (errEl) errEl.textContent = normHp.error;
+    }
+    return;
+  }
+
+  // Simpan draft registrasi di memory (tidak disimpan di plaintext storage)
+  regDraftData = {
+    nama,
+    nik,
+    hp: normHp.fonnte,
+    e164: normHp.e164,
+    tanggal_lahir: tglLahir,
+    jenis_kelamin: jk,
+    password
+  };
 
   const btn = document.getElementById('btnRegister');
   btn.disabled = true;
-  showLoading('Mendaftarkan Akun...', 'Menyimpan identitas NIK resmi...');
+  showLoading('Mengirim Kode OTP...', 'Mengirimkan 6 digit kode OTP ke WhatsApp ' + normHp.e164 + '...');
 
   try {
     const res = await postToServer({
-      action: 'register',
-      nama,
+      action: 'sendRegisterOtp',
       nik,
-      tanggal_lahir: tglLahir,
-      jenis_kelamin: jk,
-      password
+      nama,
+      hp: normHp.e164
     });
     hideLoading();
     btn.disabled = false;
 
     if (!res.ok) {
-      showAuthAlert(res.error || 'Pendaftaran akun gagal.', 'error');
+      showAuthAlert(res.error || 'Gagal mengirimkan kode OTP WhatsApp.', 'error');
       return;
     }
 
-    showAuthAlert('Pendaftaran akun berhasil! Silakan masuk dengan kata sandi Anda.', 'success');
-    showToast('success', 'Akun Dibuat', 'Silakan masuk menggunakan akun baru Anda.');
-    setTimeout(() => {
-      switchAuthTab('login');
-      document.getElementById('loginNik').value = nik;
-    }, 1200);
+    openRegOtpModal(res.maskedPhone || normHp.fonnte);
   } catch (err) {
     hideLoading();
     btn.disabled = false;
-    showAuthAlert('Tidak dapat terhubung ke server. Pendaftaran gagal.', 'error');
+    showAuthAlert('Tidak dapat terhubung ke server untuk mengirimkan kode OTP.', 'error');
   }
 }
+
+function openRegOtpModal(maskedPhone) {
+  const modal = document.getElementById('regOtpModal');
+  const alertBox = document.getElementById('regOtpAlertBox');
+  const input = document.getElementById('regOtpInput');
+  const maskedEl = document.getElementById('regOtpMaskedPhone');
+
+  if (alertBox) alertBox.style.display = 'none';
+  if (input) {
+    input.value = '';
+    input.classList.remove('is-invalid');
+  }
+  if (maskedEl) maskedEl.textContent = maskedPhone || (regDraftData?.hp || '-');
+
+  modal.style.display = 'flex';
+  startRegOtpCountdowns();
+  setTimeout(() => input?.focus(), 100);
+}
+
+function closeRegOtpModal() {
+  const modal = document.getElementById('regOtpModal');
+  if (modal) modal.style.display = 'none';
+  clearInterval(regOtpTimer);
+  clearInterval(regResendTimer);
+}
+
+function startRegOtpCountdowns() {
+  clearInterval(regOtpTimer);
+  clearInterval(regResendTimer);
+
+  // 5 menit masa berlaku OTP
+  let expireSec = 300;
+  const cdEl = document.getElementById('regOtpCountdown');
+  const updateExpireText = () => {
+    const m = String(Math.floor(expireSec / 60)).padStart(2, '0');
+    const s = String(expireSec % 60).padStart(2, '0');
+    if (cdEl) cdEl.textContent = `${m}:${s}`;
+  };
+  updateExpireText();
+
+  regOtpTimer = setInterval(() => {
+    expireSec--;
+    if (expireSec <= 0) {
+      clearInterval(regOtpTimer);
+      if (cdEl) cdEl.textContent = 'Kedaluwarsa';
+      showRegOtpAlert('Kode OTP telah kedaluwarsa. Silakan kirim ulang kode baru.', 'error');
+    } else {
+      updateExpireText();
+    }
+  }, 1000);
+
+  // 60 detik cooldown kirim ulang
+  let cdSec = 60;
+  const resendBtn = document.getElementById('btnRegOtpResend');
+  const cdSpan = document.getElementById('regResendCd');
+  if (resendBtn) resendBtn.disabled = true;
+  if (cdSpan) cdSpan.textContent = cdSec;
+
+  regResendTimer = setInterval(() => {
+    cdSec--;
+    if (cdSec <= 0) {
+      clearInterval(regResendTimer);
+      if (resendBtn) {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = 'Kirim Ulang Kode';
+      }
+    } else {
+      if (cdSpan) cdSpan.textContent = cdSec;
+    }
+  }, 1000);
+}
+
+function showRegOtpAlert(msg, type = 'error') {
+  const el = document.getElementById('regOtpAlertBox');
+  const icon = document.getElementById('regOtpAlertIcon');
+  const text = document.getElementById('regOtpAlertMsg');
+  if (!el || !text) return;
+  text.textContent = msg;
+  icon.textContent = type === 'success' ? '✅' : '⚠️';
+  el.className = `auth-alert-box ${type}`;
+  el.style.display = 'flex';
+}
+
+async function resendRegOtp() {
+  if (!regDraftData) return;
+  const resendBtn = document.getElementById('btnRegOtpResend');
+  if (resendBtn) resendBtn.disabled = true;
+  showLoading('Mengirim Ulang OTP...', 'Menghubungi layanan WhatsApp...');
+
+  try {
+    const res = await postToServer({
+      action: 'sendRegisterOtp',
+      nik: regDraftData.nik,
+      nama: regDraftData.nama,
+      hp: regDraftData.e164
+    });
+    hideLoading();
+
+    if (!res.ok) {
+      showRegOtpAlert(res.error || 'Gagal mengirim ulang OTP.', 'error');
+      if (resendBtn) resendBtn.disabled = false;
+      return;
+    }
+
+    showRegOtpAlert('Kode OTP baru telah dikirimkan ke WhatsApp Anda.', 'success');
+    startRegOtpCountdowns();
+  } catch (err) {
+    hideLoading();
+    if (resendBtn) resendBtn.disabled = false;
+    showRegOtpAlert('Gagal terhubung ke server.', 'error');
+  }
+}
+
+async function submitRegOtp() {
+  if (!regDraftData) return;
+  const otpInput = document.getElementById('regOtpInput');
+  const otp = otpInput ? otpInput.value.trim() : '';
+
+  if (!/^\d{6}$/.test(otp)) {
+    if (otpInput) otpInput.classList.add('is-invalid');
+    document.getElementById('err-regOtp')?.classList.add('show');
+    return;
+  }
+  if (otpInput) otpInput.classList.remove('is-invalid');
+  document.getElementById('err-regOtp')?.classList.remove('show');
+
+  const btn = document.getElementById('btnRegOtpSubmit');
+  if (btn) btn.disabled = true;
+  showLoading('Memverifikasi OTP...', 'Menyimpan akun resmi SIPALARUS...');
+
+  try {
+    const res = await postToServer({
+      action: 'register',
+      nama: regDraftData.nama,
+      nik: regDraftData.nik,
+      tanggal_lahir: regDraftData.tanggal_lahir,
+      jenis_kelamin: regDraftData.jenis_kelamin,
+      password: regDraftData.password,
+      hp: regDraftData.e164,
+      otp: otp
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      showRegOtpAlert(res.error || 'Verifikasi OTP gagal.', 'error');
+      return;
+    }
+
+    closeRegOtpModal();
+    const registeredNik = regDraftData.nik;
+    regDraftData = null;
+
+    showAuthAlert('Pendaftaran akun dan verifikasi WhatsApp berhasil! Silakan masuk dengan kata sandi baru Anda.', 'success');
+    showToast('success', 'Akun Berhasil Dibuat', 'WhatsApp terverifikasi. Silakan masuk.');
+    setTimeout(() => {
+      switchAuthTab('login');
+      const loginNik = document.getElementById('loginNik');
+      if (loginNik) loginNik.value = registeredNik;
+    }, 1200);
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showRegOtpAlert('Gagal memverifikasi OTP ke server.', 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   LUPA PASSWORD (MULTI-STEP ACCOUNT RECOVERY)
+═══════════════════════════════════════════════════ */
+function openForgotPasswordModal() {
+  const modal = document.getElementById('forgotPassModal');
+  if (!modal) return;
+  fpState = { nik: '', maskedPhone: '', candidateFromBAP: false, resetToken: '', timer: null, resendTimer: null };
+
+  setFpStep(1);
+  const alertBox = document.getElementById('fpAlertBox');
+  if (alertBox) alertBox.style.display = 'none';
+
+  const nikInput = document.getElementById('fpNik');
+  if (nikInput) {
+    const currentLoginNik = document.getElementById('loginNik')?.value.trim() || '';
+    nikInput.value = currentLoginNik;
+    nikInput.classList.remove('is-invalid');
+  }
+  document.getElementById('err-fpNik')?.classList.remove('show');
+
+  modal.style.display = 'flex';
+  setTimeout(() => nikInput?.focus(), 100);
+}
+
+function closeForgotPasswordModal() {
+  const modal = document.getElementById('forgotPassModal');
+  if (modal) modal.style.display = 'none';
+  clearInterval(fpState.timer);
+  clearInterval(fpState.resendTimer);
+}
+
+function setFpStep(step) {
+  // Update step indicator
+  for (let s = 1; s <= 3; s++) {
+    const stepEl = document.getElementById('fps-' + s);
+    const lineEl = document.getElementById('fpsl-' + s);
+    if (stepEl) {
+      stepEl.classList.remove('active', 'done');
+      if (s < step) stepEl.classList.add('done');
+      else if (s === step) stepEl.classList.add('active');
+    }
+    if (lineEl) {
+      lineEl.classList.remove('done');
+      if (s < step) lineEl.classList.add('done');
+    }
+  }
+
+  // Update panels
+  for (let s = 1; s <= 4; s++) {
+    const panel = document.getElementById('fpStep' + s);
+    if (panel) {
+      panel.style.display = s === step ? 'block' : 'none';
+    }
+  }
+
+  const alertBox = document.getElementById('fpAlertBox');
+  if (alertBox) alertBox.style.display = 'none';
+}
+
+function backToFpStep(step) {
+  setFpStep(step);
+}
+
+function showFpAlert(msg, type = 'error') {
+  const el = document.getElementById('fpAlertBox');
+  const icon = document.getElementById('fpAlertIcon');
+  const text = document.getElementById('fpAlertMsg');
+  if (!el || !text) return;
+  text.textContent = msg;
+  icon.textContent = type === 'success' ? '✅' : '⚠️';
+  el.className = `auth-alert-box ${type}`;
+  el.style.display = 'flex';
+}
+
+async function submitFpNik() {
+  const nikInput = document.getElementById('fpNik');
+  const nik = nikInput ? nikInput.value.trim() : '';
+
+  if (!/^\d{16}$/.test(nik)) {
+    if (nikInput) nikInput.classList.add('is-invalid');
+    document.getElementById('err-fpNik')?.classList.add('show');
+    return;
+  }
+  if (nikInput) nikInput.classList.remove('is-invalid');
+  document.getElementById('err-fpNik')?.classList.remove('show');
+
+  const btn = document.getElementById('btnFpNik');
+  if (btn) btn.disabled = true;
+  showLoading('Memeriksa Akun...', 'Memverifikasi status nomor WhatsApp pemulihan...');
+
+  try {
+    const res = await postToServer({
+      action: 'requestResetPasswordOtp',
+      nik: nik
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      // Jika backend memberi sinyal needOfficer (kasus akun lama konflik/belum ada nomor BAP)
+      if (res.needOfficer) {
+        fpState.nik = nik;
+        setFpStep(2);
+        const officerBox = document.getElementById('fpOfficerBox');
+        const officerMsg = document.getElementById('fpOfficerMsg');
+        const otpForm = document.getElementById('fpOtpForm');
+        if (officerBox) officerBox.style.display = 'flex';
+        if (officerMsg) officerMsg.textContent = res.message || 'Akun Anda memerlukan bantuan verifikasi oleh petugas imigrasi.';
+        if (otpForm) otpForm.style.display = 'none';
+        return;
+      }
+      showFpAlert(res.error || 'Permintaan pemulihan tidak dapat diproses.', 'error');
+      return;
+    }
+
+    fpState.nik = nik;
+    fpState.maskedPhone = res.maskedPhone;
+    fpState.candidateFromBAP = res.candidateFromBAP;
+
+    setFpStep(2);
+
+    const officerBox = document.getElementById('fpOfficerBox');
+    const otpForm = document.getElementById('fpOtpForm');
+    if (officerBox) officerBox.style.display = 'none';
+    if (otpForm) otpForm.style.display = 'block';
+
+    const maskedEl = document.getElementById('fpMaskedPhone');
+    if (maskedEl) maskedEl.textContent = res.maskedPhone;
+
+    startFpOtpCountdowns();
+    setTimeout(() => document.getElementById('fpOtpInput')?.focus(), 100);
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showFpAlert('Gagal terhubung ke server SIPALARUS.', 'error');
+  }
+}
+
+function startFpOtpCountdowns() {
+  clearInterval(fpState.timer);
+  clearInterval(fpState.resendTimer);
+
+  let expireSec = 300;
+  const cdEl = document.getElementById('fpOtpCountdown');
+  const updateExpireText = () => {
+    const m = String(Math.floor(expireSec / 60)).padStart(2, '0');
+    const s = String(expireSec % 60).padStart(2, '0');
+    if (cdEl) cdEl.textContent = `${m}:${s}`;
+  };
+  updateExpireText();
+
+  fpState.timer = setInterval(() => {
+    expireSec--;
+    if (expireSec <= 0) {
+      clearInterval(fpState.timer);
+      if (cdEl) cdEl.textContent = 'Kedaluwarsa';
+      showFpAlert('Kode OTP telah kedaluwarsa. Silakan klik "Kirim Ulang Kode".', 'error');
+    } else {
+      updateExpireText();
+    }
+  }, 1000);
+
+  let cdSec = 60;
+  const resendBtn = document.getElementById('btnFpResend');
+  const cdSpan = document.getElementById('fpResendCd');
+  if (resendBtn) resendBtn.disabled = true;
+  if (cdSpan) cdSpan.textContent = cdSec;
+
+  fpState.resendTimer = setInterval(() => {
+    cdSec--;
+    if (cdSec <= 0) {
+      clearInterval(fpState.resendTimer);
+      if (resendBtn) {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = 'Kirim Ulang Kode';
+      }
+    } else {
+      if (cdSpan) cdSpan.textContent = cdSec;
+    }
+  }, 1000);
+}
+
+async function resendFpOtp() {
+  if (!fpState.nik) return;
+  const resendBtn = document.getElementById('btnFpResend');
+  if (resendBtn) resendBtn.disabled = true;
+  showLoading('Mengirim Ulang OTP...', 'Menghubungi layanan WhatsApp Fonnte...');
+
+  try {
+    const res = await postToServer({
+      action: 'requestResetPasswordOtp',
+      nik: fpState.nik
+    });
+    hideLoading();
+
+    if (!res.ok) {
+      showFpAlert(res.error || 'Gagal mengirim ulang OTP.', 'error');
+      if (resendBtn) resendBtn.disabled = false;
+      return;
+    }
+
+    showFpAlert('Kode OTP baru telah dikirimkan ke WhatsApp Anda.', 'success');
+    startFpOtpCountdowns();
+  } catch (err) {
+    hideLoading();
+    if (resendBtn) resendBtn.disabled = false;
+    showFpAlert('Gagal terhubung ke server.', 'error');
+  }
+}
+
+async function submitFpOtp() {
+  const otpInput = document.getElementById('fpOtpInput');
+  const otp = otpInput ? otpInput.value.trim() : '';
+
+  if (!/^\d{6}$/.test(otp)) {
+    if (otpInput) otpInput.classList.add('is-invalid');
+    document.getElementById('err-fpOtp')?.classList.add('show');
+    return;
+  }
+  if (otpInput) otpInput.classList.remove('is-invalid');
+  document.getElementById('err-fpOtp')?.classList.remove('show');
+
+  const btn = document.getElementById('btnFpOtp');
+  if (btn) btn.disabled = true;
+  showLoading('Memverifikasi OTP...', 'Memvalidasi kode verifikasi resmi...');
+
+  try {
+    const res = await postToServer({
+      action: 'verifyResetPasswordOtp',
+      nik: fpState.nik,
+      otp: otp
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      showFpAlert(res.error || 'Kode OTP salah atau tidak valid.', 'error');
+      return;
+    }
+
+    fpState.resetToken = res.resetToken;
+    clearInterval(fpState.timer);
+    clearInterval(fpState.resendTimer);
+
+    setFpStep(3);
+    setTimeout(() => document.getElementById('fpNewPassword')?.focus(), 100);
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showFpAlert('Gagal memverifikasi OTP ke server.', 'error');
+  }
+}
+
+async function submitFpNewPassword() {
+  const passInput = document.getElementById('fpNewPassword');
+  const confInput = document.getElementById('fpConfirmPassword');
+  const pass = passInput ? passInput.value : '';
+  const conf = confInput ? confInput.value : '';
+
+  let valid = true;
+  if (pass.length < 8) {
+    passInput?.classList.add('is-invalid');
+    document.getElementById('err-fpNewPassword')?.classList.add('show');
+    valid = false;
+  } else {
+    passInput?.classList.remove('is-invalid');
+    document.getElementById('err-fpNewPassword')?.classList.remove('show');
+  }
+
+  if (pass !== conf || !conf) {
+    confInput?.classList.add('is-invalid');
+    document.getElementById('err-fpConfirmPassword')?.classList.add('show');
+    valid = false;
+  } else {
+    confInput?.classList.remove('is-invalid');
+    document.getElementById('err-fpConfirmPassword')?.classList.remove('show');
+  }
+
+  if (!valid) return;
+
+  const btn = document.getElementById('btnFpSavePass');
+  if (btn) btn.disabled = true;
+  showLoading('Menyimpan Kata Sandi Baru...', 'Memperbarui kredensial akun SIPALARUS...');
+
+  try {
+    const res = await postToServer({
+      action: 'submitNewPassword',
+      nik: fpState.nik,
+      resetToken: fpState.resetToken,
+      password: pass,
+      confirmPassword: conf
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      showFpAlert(res.error || 'Gagal memperbarui kata sandi.', 'error');
+      return;
+    }
+
+    setFpStep(4);
+    showToast('success', 'Kata Sandi Diperbarui', 'Silakan masuk menggunakan kata sandi baru Anda.');
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showFpAlert('Gagal terhubung ke server saat menyimpan kata sandi.', 'error');
+  }
+}
+
+function finishForgotPassword() {
+  const nik = fpState.nik;
+  closeForgotPasswordModal();
+  switchAuthTab('login');
+  const loginNik = document.getElementById('loginNik');
+  if (loginNik) loginNik.value = nik;
+  const loginPass = document.getElementById('loginPassword');
+  if (loginPass) {
+    loginPass.value = '';
+    setTimeout(() => loginPass.focus(), 150);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   USER DASHBOARD: WHATSAPP RECOVERY NUMBER MANAGER
+═══════════════════════════════════════════════════ */
+let currentUserPhoneData = null;
+
+async function loadUserPhoneStatus() {
+  const sess = getSession();
+  if (!sess || !sess.token) return;
+
+  try {
+    const res = await postToServer({
+      action: 'getUserPhoneStatus',
+      token: sess.token
+    });
+
+    if (!res || !res.ok) return;
+
+    currentUserPhoneData = res;
+    renderUserPhoneDashboardCard(res);
+  } catch (e) {
+    console.error('loadUserPhoneStatus error:', e);
+  }
+}
+
+function renderUserPhoneDashboardCard(data) {
+  const card = document.getElementById('dashPhoneCard');
+  const valEl = document.getElementById('dashPhoneVal');
+  const statusEl = document.getElementById('dashPhoneStatus');
+  const btn = document.getElementById('btnDashPhoneAction');
+  if (!card || !valEl || !statusEl || !btn) return;
+
+  if (data.phone_verified && data.phone) {
+    card.classList.remove('unverified');
+    card.classList.add('verified');
+    valEl.textContent = data.phone;
+    statusEl.className = 'dpc-status verified';
+    statusEl.innerHTML = '<span class="status-dot"></span>Terverifikasi untuk Pemulihan Akun';
+    btn.innerHTML = '<span>Perbarui Nomor</span>';
+  } else if (data.candidate && data.candidate.status === 'FOUND') {
+    card.classList.remove('verified');
+    card.classList.add('unverified');
+    valEl.textContent = `${data.candidate.masked} (Riwayat BAP)`;
+    statusEl.className = 'dpc-status unverified';
+    statusEl.innerHTML = '<span class="status-dot"></span>Belum Diverifikasi — Ditemukan di berkas BAP';
+    btn.innerHTML = '<span>Verifikasi Nomor Ini</span>';
+  } else {
+    card.classList.remove('verified');
+    card.classList.add('unverified');
+    valEl.textContent = 'Belum Ada Nomor';
+    statusEl.className = 'dpc-status unverified';
+    statusEl.innerHTML = '<span class="status-dot"></span>Belum Terhubung WhatsApp';
+    btn.innerHTML = '<span>Hubungkan WhatsApp</span>';
+  }
+}
+
+function handleDashboardPhoneAction() {
+  if (currentUserPhoneData && !currentUserPhoneData.phone_verified && currentUserPhoneData.candidate?.status === 'FOUND') {
+    // Kandidat BAP siap diverifikasi
+    openProfilePhoneModal(currentUserPhoneData.candidate.phone);
+  } else {
+    openProfilePhoneModal();
+  }
+}
+
+function openProfilePhoneModal(candidatePhone = null) {
+  const modal = document.getElementById('profilePhoneModal');
+  if (!modal) return;
+
+  profPhoneState = { newPhone: '', timer: null, resendTimer: null };
+
+  document.getElementById('profPhoneInputPanel').style.display = 'block';
+  document.getElementById('profPhoneOtpPanel').style.display = 'none';
+  document.getElementById('profPhoneAlertBox').style.display = 'none';
+
+  const inp = document.getElementById('profNewHp');
+  if (inp) {
+    inp.value = candidatePhone || '';
+    inp.classList.remove('is-invalid');
+  }
+  const passInp = document.getElementById('profCurrentPass');
+  if (passInp) {
+    passInp.value = '';
+    passInp.classList.remove('is-invalid');
+  }
+
+  modal.style.display = 'flex';
+  setTimeout(() => (candidatePhone ? passInp?.focus() : inp?.focus()), 100);
+}
+
+function closeProfilePhoneModal() {
+  const modal = document.getElementById('profilePhoneModal');
+  if (modal) modal.style.display = 'none';
+  clearInterval(profPhoneState.timer);
+  clearInterval(profPhoneState.resendTimer);
+}
+
+function backToProfPhoneInput() {
+  document.getElementById('profPhoneInputPanel').style.display = 'block';
+  document.getElementById('profPhoneOtpPanel').style.display = 'none';
+}
+
+function showProfPhoneAlert(msg, type = 'error') {
+  const el = document.getElementById('profPhoneAlertBox');
+  const icon = document.getElementById('profPhoneAlertIcon');
+  const text = document.getElementById('profPhoneAlertMsg');
+  if (!el || !text) return;
+  text.textContent = msg;
+  icon.textContent = type === 'success' ? '✅' : '⚠️';
+  el.className = `auth-alert-box ${type}`;
+  el.style.display = 'flex';
+}
+
+async function submitProfPhoneRequestOtp() {
+  const sess = getSession();
+  if (!sess || !sess.token) return;
+
+  const rawHp = document.getElementById('profNewHp')?.value.trim() || '';
+  const hpCountry = document.getElementById('profHpCountry')?.value || '62';
+  const pass = document.getElementById('profCurrentPass')?.value || '';
+
+  const norm = normalizePhoneNumber(rawHp, hpCountry);
+  let valid = true;
+
+  if (!norm.valid) {
+    document.getElementById('err-profNewHp')?.classList.add('show');
+    valid = false;
+  } else {
+    document.getElementById('err-profNewHp')?.classList.remove('show');
+  }
+
+  if (!pass) {
+    document.getElementById('err-profCurrentPass')?.classList.add('show');
+    valid = false;
+  } else {
+    document.getElementById('err-profCurrentPass')?.classList.remove('show');
+  }
+
+  if (!valid) return;
+
+  const btn = document.getElementById('btnProfPhoneSendOtp');
+  if (btn) btn.disabled = true;
+  showLoading('Mengirim Kode OTP...', 'Mengirim kode verifikasi ke WhatsApp...');
+
+  try {
+    const res = await postToServer({
+      action: 'requestUpdatePhoneOtp',
+      token: sess.token,
+      newPhone: norm.e164,
+      currentPassword: pass
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      showProfPhoneAlert(res.error || 'Gagal mengirimkan kode OTP.', 'error');
+      return;
+    }
+
+    profPhoneState.newPhone = norm.e164;
+    document.getElementById('profPhoneInputPanel').style.display = 'none';
+    document.getElementById('profPhoneOtpPanel').style.display = 'block';
+    document.getElementById('profPhoneMasked').textContent = res.maskedPhone || norm.fonnte;
+
+    startProfOtpCountdowns();
+    setTimeout(() => document.getElementById('profOtpInput')?.focus(), 100);
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showProfPhoneAlert('Gagal terhubung ke server.', 'error');
+  }
+}
+
+function startProfOtpCountdowns() {
+  clearInterval(profPhoneState.timer);
+  clearInterval(profPhoneState.resendTimer);
+
+  let expireSec = 300;
+  const cdEl = document.getElementById('profOtpCountdown');
+  const updateExpireText = () => {
+    const m = String(Math.floor(expireSec / 60)).padStart(2, '0');
+    const s = String(expireSec % 60).padStart(2, '0');
+    if (cdEl) cdEl.textContent = `${m}:${s}`;
+  };
+  updateExpireText();
+
+  profPhoneState.timer = setInterval(() => {
+    expireSec--;
+    if (expireSec <= 0) {
+      clearInterval(profPhoneState.timer);
+      if (cdEl) cdEl.textContent = 'Kedaluwarsa';
+      showProfPhoneAlert('Kode OTP telah kedaluwarsa. Silakan kirim ulang.', 'error');
+    } else {
+      updateExpireText();
+    }
+  }, 1000);
+
+  let cdSec = 60;
+  const resendBtn = document.getElementById('btnProfOtpResend');
+  const cdSpan = document.getElementById('profResendCd');
+  if (resendBtn) resendBtn.disabled = true;
+  if (cdSpan) cdSpan.textContent = cdSec;
+
+  profPhoneState.resendTimer = setInterval(() => {
+    cdSec--;
+    if (cdSec <= 0) {
+      clearInterval(profPhoneState.resendTimer);
+      if (resendBtn) {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = 'Kirim Ulang';
+      }
+    } else {
+      if (cdSpan) cdSpan.textContent = cdSec;
+    }
+  }, 1000);
+}
+
+async function resendProfOtp() {
+  const sess = getSession();
+  if (!sess || !sess.token || !profPhoneState.newPhone) return;
+
+  const resendBtn = document.getElementById('btnProfOtpResend');
+  if (resendBtn) resendBtn.disabled = true;
+  showLoading('Mengirim Ulang OTP...', 'Menghubungi layanan WhatsApp...');
+
+  try {
+    const res = await postToServer({
+      action: 'requestUpdatePhoneOtp',
+      token: sess.token,
+      newPhone: profPhoneState.newPhone,
+      currentPassword: ''
+    });
+    hideLoading();
+
+    if (!res.ok) {
+      showProfPhoneAlert(res.error || 'Gagal mengirim ulang OTP.', 'error');
+      if (resendBtn) resendBtn.disabled = false;
+      return;
+    }
+
+    showProfPhoneAlert('Kode OTP baru telah dikirimkan ke WhatsApp.', 'success');
+    startProfOtpCountdowns();
+  } catch (err) {
+    hideLoading();
+    if (resendBtn) resendBtn.disabled = false;
+    showProfPhoneAlert('Gagal terhubung ke server.', 'error');
+  }
+}
+
+async function submitProfPhoneVerifyOtp() {
+  const sess = getSession();
+  if (!sess || !sess.token) return;
+
+  const otpInput = document.getElementById('profOtpInput');
+  const otp = otpInput ? otpInput.value.trim() : '';
+
+  if (!/^\d{6}$/.test(otp)) {
+    if (otpInput) otpInput.classList.add('is-invalid');
+    document.getElementById('err-profOtp')?.classList.add('show');
+    return;
+  }
+  if (otpInput) otpInput.classList.remove('is-invalid');
+  document.getElementById('err-profOtp')?.classList.remove('show');
+
+  const btn = document.getElementById('btnProfPhoneVerify');
+  if (btn) btn.disabled = true;
+  showLoading('Memverifikasi OTP...', 'Menautkan nomor ke akun SIPALARUS...');
+
+  try {
+    const res = await postToServer({
+      action: 'verifyUpdatePhoneOtp',
+      token: sess.token,
+      otp: otp
+    });
+    hideLoading();
+    if (btn) btn.disabled = false;
+
+    if (!res.ok) {
+      showProfPhoneAlert(res.error || 'Kode OTP salah.', 'error');
+      return;
+    }
+
+    closeProfilePhoneModal();
+    showToast('success', 'WhatsApp Ditautkan', 'Nomor pemulihan akun berhasil diverifikasi.');
+    await loadUserPhoneStatus();
+  } catch (err) {
+    hideLoading();
+    if (btn) btn.disabled = false;
+    showProfPhoneAlert('Gagal memverifikasi OTP.', 'error');
+  }
+}
+
 
 /* ═══════════════════════════════════════════════════
    QUICK STATUS TRACKER (ON LANDING PAGE)

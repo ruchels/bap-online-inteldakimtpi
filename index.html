@@ -609,7 +609,10 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="loginPassword">Kata Sandi / Password</label>
+              <div class="form-label-row-between">
+                <label class="form-label" for="loginPassword">Kata Sandi / Password</label>
+                <a href="javascript:void(0)" onclick="openForgotPasswordModal()" class="auth-link-forgot" title="Pulihkan kata sandi via WhatsApp">Lupa Password?</a>
+              </div>
               <div class="input-with-icon">
                 <span class="input-icon">🔒</span>
                 <input type="password" id="loginPassword" class="form-control" placeholder="Masukkan password Anda"
@@ -642,6 +645,7 @@
           </div>
 
           <form class="auth-form" onsubmit="event.preventDefault(); doRegister();">
+            <!-- 1. Nama Lengkap Sesuai KTP -->
             <div class="form-group">
               <label class="form-label" for="regNama">Nama Lengkap Sesuai KTP *</label>
               <div class="input-with-icon">
@@ -652,6 +656,7 @@
               <div class="field-error-msg" id="err-regNama">Nama lengkap wajib diisi (minimal 3 karakter)</div>
             </div>
 
+            <!-- 2. Nomor Induk Kependudukan (NIK) -->
             <div class="form-group">
               <label class="form-label" for="regNik">Nomor Induk Kependudukan (NIK) *</label>
               <div class="input-with-icon">
@@ -662,6 +667,39 @@
               <div class="field-error-msg" id="err-regNik">NIK wajib tepat 16 digit angka</div>
             </div>
 
+            <!-- 3. Nomor Telepon / WhatsApp -->
+            <div class="form-group">
+              <label class="form-label" for="regHp">Nomor Telepon / WhatsApp (Aktif) *</label>
+              <div class="phone-input-group">
+                <select id="regHpCountry" class="form-control phone-country-select" onchange="onRegHpCountryChange()"
+                  aria-label="Kode Negara Telepon">
+                  <option value="62" data-iso="ID" data-placeholder="81234567890" selected>🇮🇩 +62</option>
+                  <option value="60" data-iso="MY" data-placeholder="123456789">🇲🇾 +60</option>
+                  <option value="65" data-iso="SG" data-placeholder="81234567">🇸🇬 +65</option>
+                  <option value="673" data-iso="BN" data-placeholder="8123456">🇧🇳 +673</option>
+                  <option value="63" data-iso="PH" data-placeholder="9123456789">🇵🇭 +63</option>
+                  <option value="66" data-iso="TH" data-placeholder="812345678">🇹🇭 +66</option>
+                  <option value="84" data-iso="VN" data-placeholder="912345678">🇻🇳 +84</option>
+                  <option value="81" data-iso="JP" data-placeholder="9012345678">🇯🇵 +81</option>
+                  <option value="82" data-iso="KR" data-placeholder="1012345678">🇰🇷 +82</option>
+                  <option value="86" data-iso="CN" data-placeholder="13812345678">🇨🇳 +86</option>
+                  <option value="852" data-iso="HK" data-placeholder="91234567">🇭🇰 +852</option>
+                  <option value="886" data-iso="TW" data-placeholder="912345678">🇹🇼 +886</option>
+                  <option value="966" data-iso="SA" data-placeholder="512345678">🇸🇦 +966</option>
+                  <option value="971" data-iso="AE" data-placeholder="501234567">🇦🇪 +971</option>
+                  <option value="61" data-iso="AU" data-placeholder="412345678">🇦🇺 +61</option>
+                  <option value="44" data-iso="GB" data-placeholder="7123456789">🇬🇧 +44</option>
+                  <option value="1" data-iso="US" data-placeholder="4085551234">🇺🇸 +1</option>
+                  <option value="other" data-iso="OTHER" data-placeholder="+[kode_negara][nomor]">🌐 Lainnya</option>
+                </select>
+                <input type="tel" id="regHp" class="form-control phone-number-input"
+                  placeholder="08xxxxxxxxxx atau 8xxxxxxxxxx" inputmode="tel" autocomplete="tel">
+              </div>
+              <div class="field-hint-text" id="regHpHint">Kode OTP verifikasi akan dikirimkan ke WhatsApp nomor ini.</div>
+              <div class="field-error-msg" id="err-regHp">Nomor WhatsApp wajib diisi dengan format valid</div>
+            </div>
+
+            <!-- 4 & 5. Tanggal Lahir dan Jenis Kelamin -->
             <div class="form-row-2">
               <div class="form-group">
                 <label class="form-label" for="regTglLahir">Tanggal Lahir *</label>
@@ -680,20 +718,21 @@
               </div>
             </div>
 
+            <!-- 6. Password Baru (Min. 8 Karakter) -->
             <div class="form-group">
-              <label class="form-label" for="regPassword">Kata Sandi Baru (Min. 6 Karakter) *</label>
+              <label class="form-label" for="regPassword">Kata Sandi Baru (Min. 8 Karakter) *</label>
               <div class="input-with-icon">
                 <span class="input-icon">🔒</span>
-                <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi akun"
+                <input type="password" id="regPassword" class="form-control" placeholder="Buat kata sandi akun (minimal 8 karakter)"
                   autocomplete="new-password">
                 <button type="button" class="btn-toggle-pwd"
                   onclick="togglePasswordVisibility('regPassword', this)">👁️</button>
               </div>
-              <div class="field-error-msg" id="err-regPassword">Password minimal 6 karakter</div>
+              <div class="field-error-msg" id="err-regPassword">Password baru minimal 8 karakter</div>
             </div>
 
             <button type="submit" class="btn-auth-submit" id="btnRegister">
-              <span>Daftar Akun Baru</span>
+              <span>Daftar &amp; Verifikasi WhatsApp</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8zM19 8v6M22 11h-6" />
               </svg>
@@ -748,6 +787,23 @@
               </span>
               <span class="chip-auth"><span class="chip-auth-dot"></span>Terverifikasi</span>
             </div>
+          </div>
+        </div>
+
+        <!-- WhatsApp Recovery Status Card on User Dashboard -->
+        <div class="dpb-phone-card" id="dashPhoneCard">
+          <div class="dpc-icon-wrap">
+            <span class="dpc-icon">📱</span>
+          </div>
+          <div class="dpc-content">
+            <div class="dpc-title">WhatsApp Pemulihan Akun</div>
+            <div class="dpc-val" id="dashPhoneVal">Memeriksa nomor...</div>
+            <div class="dpc-status" id="dashPhoneStatus"><span class="status-dot"></span>Memeriksa status</div>
+          </div>
+          <div class="dpc-actions">
+            <button class="btn-dpc-action" id="btnDashPhoneAction" onclick="handleDashboardPhoneAction()">
+              <span>Kelola Nomor</span>
+            </button>
           </div>
         </div>
         <div class="dpb-right">
@@ -1699,6 +1755,331 @@
   <!-- ═══════════════════════════════════════════════════
      TOAST NOTIFICATION CONTAINER
 ═══════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════
+     MODAL: LUPA KATA SANDI (MULTI-STEP RECOVERY)
+  ═══════════════════════════════════════════════════ -->
+  <div id="forgotPassModal" class="custom-confirm-overlay" role="dialog" aria-modal="true" style="display:none;">
+    <div class="auth-modal-box fp-modal-box">
+      <div class="auth-modal-header">
+        <div class="amh-title-wrap">
+          <div class="amh-icon">🔐</div>
+          <div>
+            <h3 class="amh-title" id="fpModalTitle">Lupa Password Akun</h3>
+            <p class="amh-sub" id="fpModalSub">Pemulihan akses resmi SIPALARUS via WhatsApp</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeForgotPasswordModal()" title="Tutup">✕</button>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="fp-stepper" id="fpStepper">
+        <div class="fps-step active" id="fps-1"><span>1</span> NIK</div>
+        <div class="fps-line" id="fpsl-1"></div>
+        <div class="fps-step" id="fps-2"><span>2</span> OTP</div>
+        <div class="fps-line" id="fpsl-2"></div>
+        <div class="fps-step" id="fps-3"><span>3</span> Sandi Baru</div>
+      </div>
+
+      <!-- Alert Box inside FP Modal -->
+      <div class="auth-alert-box" id="fpAlertBox" style="display:none;">
+        <span class="alert-icon" id="fpAlertIcon">⚠️</span>
+        <span class="alert-msg" id="fpAlertMsg"></span>
+      </div>
+
+      <div class="auth-modal-body">
+        <!-- TAHAP 1: INPUT NIK -->
+        <div class="fp-step-panel active" id="fpStep1">
+          <div class="fp-panel-info">
+            Masukkan Nomor Induk Kependudukan (NIK) 16 digit terdaftar Anda untuk memverifikasi akun pemulihan SIPALARUS.
+          </div>
+          <form onsubmit="event.preventDefault(); submitFpNik();">
+            <div class="form-group">
+              <label class="form-label" for="fpNik">Nomor Induk Kependudukan (NIK) *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🪪</span>
+                <input type="tel" id="fpNik" class="form-control" placeholder="16 digit NIK sesuai KTP"
+                  maxlength="16" inputmode="numeric" autocomplete="username">
+              </div>
+              <div class="field-error-msg" id="err-fpNik">NIK harus berisi 16 digit angka valid</div>
+            </div>
+
+            <div class="fp-action-row">
+              <button type="button" class="btn-fp-cancel" onclick="closeForgotPasswordModal()">Batal</button>
+              <button type="submit" class="btn-fp-submit" id="btnFpNik">
+                <span>Lanjutkan &rarr;</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAHAP 2: VERIFIKASI OTP WHATSAPP -->
+        <div class="fp-step-panel" id="fpStep2" style="display:none;">
+          <div class="fp-panel-info">
+            Kami telah mengirimkan 6 digit kode OTP ke nomor WhatsApp terdaftar Anda:
+            <div class="fp-masked-phone" id="fpMaskedPhone">628xxxxxxxxxx</div>
+            <div class="fp-otp-notice">Kode berlaku selama <strong>5 menit</strong> dan hanya dapat digunakan 1 kali.</div>
+          </div>
+
+          <!-- Officer Contact Callout (jika akun lama butuh bantuan petugas) -->
+          <div class="fp-officer-box" id="fpOfficerBox" style="display:none;">
+            <div class="fob-icon">🛡️</div>
+            <div class="fob-text">
+              <strong id="fpOfficerTitle">Bantuan Petugas SIPALARUS Diperlukan</strong>
+              <p id="fpOfficerMsg">Akun Anda memerlukan bantuan verifikasi oleh petugas imigrasi.</p>
+              <div class="fob-actions">
+                <a href="https://wa.me/6281371514943" target="_blank" rel="noopener noreferrer" class="btn-wa-officer">
+                  <span>Chat WhatsApp Petugas (+62 813-7151-4943)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <form id="fpOtpForm" onsubmit="event.preventDefault(); submitFpOtp();">
+            <div class="form-group">
+              <label class="form-label" for="fpOtpInput">Masukkan 6 Digit Kode OTP *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔑</span>
+                <input type="tel" id="fpOtpInput" class="form-control otp-code-input" placeholder="• • • • • •"
+                  maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+              </div>
+              <div class="field-error-msg" id="err-fpOtp">Kode OTP harus berupa 6 digit angka</div>
+            </div>
+
+            <div class="fp-timer-row">
+              <div class="fp-timer-wrap">
+                Masa berlaku: <span class="fp-countdown" id="fpOtpCountdown">05:00</span>
+              </div>
+              <button type="button" class="btn-fp-resend" id="btnFpResend" onclick="resendFpOtp()" disabled>
+                Kirim Ulang (<span id="fpResendCd">60</span>s)
+              </button>
+            </div>
+
+            <div class="fp-action-row">
+              <button type="button" class="btn-fp-cancel" onclick="backToFpStep(1)">&larr; Kembali</button>
+              <button type="submit" class="btn-fp-submit" id="btnFpOtp">
+                <span>Verifikasi OTP</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAHAP 3: BUAT PASSWORD BARU -->
+        <div class="fp-step-panel" id="fpStep3" style="display:none;">
+          <div class="fp-panel-info">
+            Kode OTP terverifikasi! Silakan tetapkan kata sandi baru untuk akun SIPALARUS Anda (minimal 8 karakter).
+          </div>
+          <form onsubmit="event.preventDefault(); submitFpNewPassword();">
+            <div class="form-group">
+              <label class="form-label" for="fpNewPassword">Kata Sandi Baru *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="fpNewPassword" class="form-control" placeholder="Minimal 8 karakter baru"
+                  autocomplete="new-password">
+                <button type="button" class="btn-toggle-pwd"
+                  onclick="togglePasswordVisibility('fpNewPassword', this)">👁️</button>
+              </div>
+              <div class="field-error-msg" id="err-fpNewPassword">Kata sandi baru minimal 8 karakter</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fpConfirmPassword">Konfirmasi Kata Sandi Baru *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="fpConfirmPassword" class="form-control" placeholder="Ulangi kata sandi baru"
+                  autocomplete="new-password">
+                <button type="button" class="btn-toggle-pwd"
+                  onclick="togglePasswordVisibility('fpConfirmPassword', this)">👁️</button>
+              </div>
+              <div class="field-error-msg" id="err-fpConfirmPassword">Konfirmasi kata sandi tidak cocok</div>
+            </div>
+
+            <div class="fp-action-row">
+              <button type="submit" class="btn-fp-submit full-btn" id="btnFpSavePass">
+                <span>Simpan Password Baru</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- TAHAP 4: SUKSES -->
+        <div class="fp-step-panel" id="fpStep4" style="display:none;">
+          <div class="fp-success-state">
+            <div class="fps-icon">✅</div>
+            <h3 class="fps-title">Password Berhasil Diperbarui</h3>
+            <p class="fps-sub">Password berhasil diperbarui. Silakan login menggunakan password baru Anda.</p>
+            <button type="button" class="btn-auth-submit" onclick="finishForgotPassword()">
+              <span>Masuk Sekarang &rarr;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     MODAL: VERIFIKASI OTP REGISTRASI AKUN BARU
+  ═══════════════════════════════════════════════════ -->
+  <div id="regOtpModal" class="custom-confirm-overlay" role="dialog" aria-modal="true" style="display:none;">
+    <div class="auth-modal-box">
+      <div class="auth-modal-header">
+        <div class="amh-title-wrap">
+          <div class="amh-icon">💬</div>
+          <div>
+            <h3 class="amh-title">Verifikasi Nomor WhatsApp</h3>
+            <p class="amh-sub">Pendaftaran Akun Pemohon SIPALARUS</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeRegOtpModal()" title="Tutup">✕</button>
+      </div>
+
+      <div class="auth-modal-body">
+        <div class="fp-panel-info">
+          Kode verifikasi 6 digit telah dikirimkan ke WhatsApp Anda:
+          <div class="fp-masked-phone" id="regOtpMaskedPhone">628xxxxxxxxxx</div>
+          <div class="fp-otp-notice">Masa berlaku kode: <strong>5 menit</strong>. Jangan berikan kode kepada siapa pun.</div>
+        </div>
+
+        <div class="auth-alert-box" id="regOtpAlertBox" style="display:none;">
+          <span class="alert-icon" id="regOtpAlertIcon">⚠️</span>
+          <span class="alert-msg" id="regOtpAlertMsg"></span>
+        </div>
+
+        <form onsubmit="event.preventDefault(); submitRegOtp();">
+          <div class="form-group">
+            <label class="form-label" for="regOtpInput">Masukkan 6 Digit Kode OTP *</label>
+            <div class="input-with-icon">
+              <span class="input-icon">🔑</span>
+              <input type="tel" id="regOtpInput" class="form-control otp-code-input" placeholder="• • • • • •"
+                maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+            </div>
+            <div class="field-error-msg" id="err-regOtp">Kode OTP harus berupa 6 digit angka</div>
+          </div>
+
+          <div class="fp-timer-row">
+            <div class="fp-timer-wrap">
+              Masa berlaku: <span class="fp-countdown" id="regOtpCountdown">05:00</span>
+            </div>
+            <button type="button" class="btn-fp-resend" id="btnRegOtpResend" onclick="resendRegOtp()" disabled>
+              Kirim Ulang (<span id="regResendCd">60</span>s)
+            </button>
+          </div>
+
+          <div class="fp-action-row">
+            <button type="button" class="btn-fp-cancel" onclick="closeRegOtpModal()">Batal</button>
+            <button type="submit" class="btn-fp-submit" id="btnRegOtpSubmit">
+              <span>Verifikasi &amp; Simpan Akun</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+     MODAL: PENGATURAN / PEMBARUAN NOMOR WHATSAPP (DASHBOARD)
+  ═══════════════════════════════════════════════════ -->
+  <div id="profilePhoneModal" class="custom-confirm-overlay" role="dialog" aria-modal="true" style="display:none;">
+    <div class="auth-modal-box">
+      <div class="auth-modal-header">
+        <div class="amh-title-wrap">
+          <div class="amh-icon">📱</div>
+          <div>
+            <h3 class="amh-title" id="profPhoneModalTitle">Nomor WhatsApp Pemulihan</h3>
+            <p class="amh-sub">Pengaturan Keamanan Akun Pemohon</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="closeProfilePhoneModal()" title="Tutup">✕</button>
+      </div>
+
+      <div class="auth-modal-body">
+        <div class="auth-alert-box" id="profPhoneAlertBox" style="display:none;">
+          <span class="alert-icon" id="profPhoneAlertIcon">⚠️</span>
+          <span class="alert-msg" id="profPhoneAlertMsg"></span>
+        </div>
+
+        <!-- Panel Form Input Nomor Baru -->
+        <div id="profPhoneInputPanel">
+          <div class="fp-panel-info" id="profPhonePromptText">
+            Hubungkan nomor WhatsApp aktif Anda agar dapat menggunakan fitur pemulihan akun otomatis jika lupa kata sandi.
+          </div>
+
+          <form onsubmit="event.preventDefault(); submitProfPhoneRequestOtp();">
+            <div class="form-group">
+              <label class="form-label" for="profNewHp">Nomor WhatsApp Baru *</label>
+              <div class="phone-input-group">
+                <select id="profHpCountry" class="form-control phone-country-select" onchange="onProfHpCountryChange()"
+                  aria-label="Kode Negara Telepon">
+                  <option value="62" data-iso="ID" data-placeholder="81234567890" selected>🇮🇩 +62</option>
+                  <option value="60" data-iso="MY" data-placeholder="123456789">🇲🇾 +60</option>
+                  <option value="65" data-iso="SG" data-placeholder="81234567">🇸🇬 +65</option>
+                  <option value="other" data-iso="OTHER" data-placeholder="+[kode_negara][nomor]">🌐 Lainnya</option>
+                </select>
+                <input type="tel" id="profNewHp" class="form-control phone-number-input"
+                  placeholder="08xxxxxxxxxx atau 8xxxxxxxxxx" inputmode="tel">
+              </div>
+              <div class="field-error-msg" id="err-profNewHp">Nomor WhatsApp tidak valid</div>
+            </div>
+
+            <div class="form-group" id="profPassGroup">
+              <label class="form-label" for="profCurrentPass">Konfirmasi Kata Sandi Akun Saat Ini *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="profCurrentPass" class="form-control" placeholder="Masukkan password Anda">
+                <button type="button" class="btn-toggle-pwd"
+                  onclick="togglePasswordVisibility('profCurrentPass', this)">👁️</button>
+              </div>
+              <div class="field-error-msg" id="err-profCurrentPass">Kata sandi akun wajib diisi</div>
+            </div>
+
+            <div class="fp-action-row">
+              <button type="button" class="btn-fp-cancel" onclick="closeProfilePhoneModal()">Batal</button>
+              <button type="submit" class="btn-fp-submit" id="btnProfPhoneSendOtp">
+                <span>Kirim Kode OTP &rarr;</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Panel Verifikasi OTP Nomor Profil -->
+        <div id="profPhoneOtpPanel" style="display:none;">
+          <div class="fp-panel-info">
+            Kode verifikasi telah dikirimkan ke WhatsApp:
+            <div class="fp-masked-phone" id="profPhoneMasked">628xxxxxxxxxx</div>
+            <div class="fp-otp-notice">Masukkan kode OTP dalam waktu <strong>5 menit</strong> untuk menautkan nomor ini.</div>
+          </div>
+
+          <form onsubmit="event.preventDefault(); submitProfPhoneVerifyOtp();">
+            <div class="form-group">
+              <label class="form-label" for="profOtpInput">Kode Verifikasi (OTP) 6 Digit *</label>
+              <div class="input-with-icon">
+                <span class="input-icon">🔑</span>
+                <input type="tel" id="profOtpInput" class="form-control otp-code-input" placeholder="• • • • • •"
+                  maxlength="6" inputmode="numeric">
+              </div>
+              <div class="field-error-msg" id="err-profOtp">Kode OTP harus 6 digit angka</div>
+            </div>
+
+            <div class="fp-timer-row">
+              <div class="fp-timer-wrap">
+                Masa berlaku: <span class="fp-countdown" id="profOtpCountdown">05:00</span>
+              </div>
+              <button type="button" class="btn-fp-resend" id="btnProfOtpResend" onclick="resendProfOtp()" disabled>
+                Kirim Ulang (<span id="profResendCd">60</span>s)
+              </button>
+            </div>
+
+            <div class="fp-action-row">
+              <button type="button" class="btn-fp-cancel" onclick="backToProfPhoneInput()">&larr; Kembali</button>
+              <button type="submit" class="btn-fp-submit" id="btnProfPhoneVerify">
+                <span>Verifikasi &amp; Tautkan Nomor</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer" class="toast-stack-container"></div>
 
   <!-- Hidden Canvas for QR Code Generation -->
