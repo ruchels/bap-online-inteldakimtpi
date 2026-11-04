@@ -902,14 +902,20 @@ function openRegOtpModal(maskedPhone) {
   }
   if (maskedEl) maskedEl.textContent = maskedPhone || (regDraftData?.hp || '-');
 
+  modal.classList.add('show');
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   startRegOtpCountdowns();
   setTimeout(() => input?.focus(), 100);
 }
 
 function closeRegOtpModal() {
   const modal = document.getElementById('regOtpModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+  document.body.style.overflow = '';
   clearInterval(regOtpTimer);
   clearInterval(regResendTimer);
 }
@@ -1075,13 +1081,19 @@ function openForgotPasswordModal() {
   }
   document.getElementById('err-fpNik')?.classList.remove('show');
 
+  modal.classList.add('show');
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   setTimeout(() => nikInput?.focus(), 100);
 }
 
 function closeForgotPasswordModal() {
   const modal = document.getElementById('forgotPassModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+  document.body.style.overflow = '';
   clearInterval(fpState.timer);
   clearInterval(fpState.resendTimer);
 }
@@ -1462,13 +1474,19 @@ function openProfilePhoneModal(candidatePhone = null) {
     passInp.classList.remove('is-invalid');
   }
 
+  modal.classList.add('show');
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   setTimeout(() => (candidatePhone ? passInp?.focus() : inp?.focus()), 100);
 }
 
 function closeProfilePhoneModal() {
   const modal = document.getElementById('profilePhoneModal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
+  document.body.style.overflow = '';
   clearInterval(profPhoneState.timer);
   clearInterval(profPhoneState.resendTimer);
 }

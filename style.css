@@ -5245,16 +5245,46 @@ select.form-control {
   background: rgba(196, 146, 42, 0.08);
 }
 
+.custom-confirm-overlay {
+  display: none;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 99999 !important;
+  background: rgba(11, 34, 64, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+.custom-confirm-overlay.show,
+.custom-confirm-overlay[style*="display: flex"],
+.custom-confirm-overlay[style*="display:flex"] {
+  display: flex !important;
+}
+
 .auth-modal-box {
   background: #ffffff;
   border-radius: 18px;
   max-width: 480px;
-  width: 92%;
-  box-shadow: 0 25px 60px -15px rgba(11, 34, 64, 0.35), 0 0 0 1px rgba(29, 78, 137, 0.12);
+  width: 100%;
+  margin: auto;
+  box-shadow: 0 25px 60px -15px rgba(11, 34, 64, 0.5), 0 0 0 1px rgba(29, 78, 137, 0.15);
   overflow: hidden;
   animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 100000;
 }
 
 @keyframes modalSlideUp {
