@@ -16,22 +16,26 @@ const COMPRESS_MAX_W = 1280;
 const COMPRESS_QUAL = 0.8;
 
 /* ═══════════════════════════════════════════════════
-   GA4 & WEB ANALYTICS TRACKING ENGINE
+   SIPALARUS NATIVE WEB ANALYTICS ENGINE
    Website Publik: https://sipalarus.com
-   Ketentuan:
-   - Pengunjung tanpa login / registrasi tetap dihitung
-   - Total page views aktual SPA
-   - Aman & mematuhi privasi (No NIK, No Passwords, No PII)
-   - Asynchronous non-blocking & anti-duplikasi
+   - 100% Mandiri, Real-Time & Kebal Ad-Blocker
+   - Melacak Total Page Views & Perangkat (HP/Desktop)
+   - Privasi Terlindungi (Tanpa NIK, Tanpa IP, Tanpa Data Sensitif)
 ═══════════════════════════════════════════════════ */
-const GA_TRACKING_CONFIG = {
-  gtmId: 'GTM-W4892VGS',
-  measurementId: (window.APP_CONFIG && window.APP_CONFIG.GA_MEASUREMENT_ID) || '',
-  endpointUrl: APPS_SCRIPT_URL,
-};
 
 let lastTrackedPath = '';
 let lastTrackedTimestamp = 0;
+
+function getDeviceType() {
+  const ua = navigator.userAgent || '';
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+    return 'tablet';
+  }
+  if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
 
 function trackVisitorPageView(pagePath = '/', pageTitle = '') {
   try {
@@ -39,56 +43,39 @@ function trackVisitorPageView(pagePath = '/', pageTitle = '') {
     const safeTitle = pageTitle || document.title || 'SIPALARUS — Sistem Paspor Hilang Dan Rusak';
     const now = Date.now();
 
-    // Debounce & cegah double-counting pada reload/transisi rute yang sama dalam waktu singkat (< 500ms)
+    // Debounce & cegah double-counting pada reload/transisi rute yang sama dalam 500ms
     if (lastTrackedPath === cleanPath && (now - lastTrackedTimestamp) < 500) {
       return;
     }
     lastTrackedPath = cleanPath;
     lastTrackedTimestamp = now;
 
-    // 1. Google Analytics 4 / Google Tag Manager DataLayer Push
-    window.dataLayer = window.dataLayer || [];
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', 'page_view', {
-        page_title: safeTitle,
-        page_location: window.location.origin + cleanPath,
-        page_path: cleanPath,
-      });
-    } else {
-      window.dataLayer.push({
-        event: 'page_view',
-        page_title: safeTitle,
-        page_location: window.location.origin + cleanPath,
-        page_path: cleanPath
-      });
-    }
+    const device = getDeviceType();
 
-    // 2. Dual-Record ke Backend Apps Script (Asynchronous non-blocking)
-    if (GA_TRACKING_CONFIG.endpointUrl) {
-      const payload = JSON.stringify({
-        action: 'recordPageView',
-        path: cleanPath,
-        title: safeTitle,
-        ts: new Date().toISOString()
-      });
+    // Kirim sinyal page_view ke backend SIPALARUS (First-Party & Non-Blocking)
+    if (APPS_SCRIPT_URL) {
+      const pingUrl = `${APPS_SCRIPT_URL}?action=recordPageView&path=${encodeURIComponent(cleanPath)}&title=${encodeURIComponent(safeTitle)}&device=${encodeURIComponent(device)}&_=${now}`;
 
-      if (navigator.sendBeacon) {
-        const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
-        navigator.sendBeacon(GA_TRACKING_CONFIG.endpointUrl, blob);
-      } else {
-        fetch(GA_TRACKING_CONFIG.endpointUrl, {
-          method: 'POST',
+      // 1. Prioritas utama: Fetch dengan keepalive (modern, cepat, non-blocking)
+      if (typeof window.fetch === 'function') {
+        fetch(pingUrl, {
+          method: 'GET',
           mode: 'no-cors',
           keepalive: true,
-          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-          body: payload
+          cache: 'no-store'
         }).catch(() => {
-          // Non-blocking fail-safe
+          // Fallback ke Image Ping jika fetch terhalang
+          const img = new Image();
+          img.src = pingUrl;
         });
+      } else {
+        // Fallback untuk browser lama
+        const img = new Image();
+        img.src = pingUrl;
       }
     }
   } catch (err) {
-    console.warn('[Analytics] Pageview tracking failed (non-blocking):', err);
+    // Non-blocking fail-safe
   }
 }
 
