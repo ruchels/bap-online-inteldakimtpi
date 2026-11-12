@@ -6,7 +6,7 @@
 ═══════════════════════════════════════════════════ */
 
 /* ── CONFIGURATION ── */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwOHkMM30Pc2z1Hz2fJcL92GuBIQLRN4vJpVGiill8aRzJMJ3ywYDUJkam3oVL0ySno/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6LGyjByQDSpr-yfEGAK2UQWQo_h73tvJ0PShCSa7k14y4ZUXK7embOnzpU3zSNMPD/exec';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_SLOTS = 1; // 1 Petugas Pemeriksa (1 Pemohon per Sesi)
 const SESSION_KEY = 'baper_session';
@@ -14,6 +14,83 @@ const DRAFT_KEY = 'bap_form_draft_v2';
 const LOCAL_REGS_KEY = 'bap_local_records_v2';
 const COMPRESS_MAX_W = 1280;
 const COMPRESS_QUAL = 0.8;
+
+/* ═══════════════════════════════════════════════════
+   GA4 & WEB ANALYTICS TRACKING ENGINE
+   Website Publik: https://sipalarus.com
+   Ketentuan:
+   - Pengunjung tanpa login / registrasi tetap dihitung
+   - Total page views aktual SPA
+   - Aman & mematuhi privasi (No NIK, No Passwords, No PII)
+   - Asynchronous non-blocking & anti-duplikasi
+═══════════════════════════════════════════════════ */
+const GA_TRACKING_CONFIG = {
+  gtmId: 'GTM-W4892VGS',
+  measurementId: (window.APP_CONFIG && window.APP_CONFIG.GA_MEASUREMENT_ID) || '',
+  endpointUrl: APPS_SCRIPT_URL,
+};
+
+let lastTrackedPath = '';
+let lastTrackedTimestamp = 0;
+
+function trackVisitorPageView(pagePath = '/', pageTitle = '') {
+  try {
+    const cleanPath = (pagePath.startsWith('/') ? pagePath : '/' + pagePath).split('?')[0].split('#')[0];
+    const safeTitle = pageTitle || document.title || 'SIPALARUS — Sistem Paspor Hilang Dan Rusak';
+    const now = Date.now();
+
+    // Debounce & cegah double-counting pada reload/transisi rute yang sama dalam waktu singkat (< 500ms)
+    if (lastTrackedPath === cleanPath && (now - lastTrackedTimestamp) < 500) {
+      return;
+    }
+    lastTrackedPath = cleanPath;
+    lastTrackedTimestamp = now;
+
+    // 1. Google Analytics 4 / Google Tag Manager DataLayer Push
+    window.dataLayer = window.dataLayer || [];
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'page_view', {
+        page_title: safeTitle,
+        page_location: window.location.origin + cleanPath,
+        page_path: cleanPath,
+      });
+    } else {
+      window.dataLayer.push({
+        event: 'page_view',
+        page_title: safeTitle,
+        page_location: window.location.origin + cleanPath,
+        page_path: cleanPath
+      });
+    }
+
+    // 2. Dual-Record ke Backend Apps Script (Asynchronous non-blocking)
+    if (GA_TRACKING_CONFIG.endpointUrl) {
+      const payload = JSON.stringify({
+        action: 'recordPageView',
+        path: cleanPath,
+        title: safeTitle,
+        ts: new Date().toISOString()
+      });
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
+        navigator.sendBeacon(GA_TRACKING_CONFIG.endpointUrl, blob);
+      } else {
+        fetch(GA_TRACKING_CONFIG.endpointUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          keepalive: true,
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: payload
+        }).catch(() => {
+          // Non-blocking fail-safe
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('[Analytics] Pageview tracking failed (non-blocking):', err);
+  }
+}
 
 const SLOT_DEFS = [
   { id: 'A', label: '08:00 – 10:00 WIB', title: 'Sesi Pagi I', start: 8, end: 10 },
@@ -526,6 +603,7 @@ function showLanding() {
   p.style.display = 'block';
   updateNavAndLandingUser();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  trackVisitorPageView('/', 'SIPALARUS — Beranda Layanan Paspor Rusak & Hilang');
 }
 
 function showAuthPage(openRegister = false) {
@@ -535,6 +613,7 @@ function showAuthPage(openRegister = false) {
   p.style.display = 'block';
   switchAuthTab(openRegister ? 'register' : 'login');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  trackVisitorPageView(openRegister ? '/registrasi' : '/login', openRegister ? 'SIPALARUS — Pendaftaran Akun Pemohon' : 'SIPALARUS — Masuk Pemohon');
 }
 
 function switchAuthTab(mode) {
@@ -551,11 +630,13 @@ function switchAuthTab(mode) {
     tabReg.classList.add('active');
     panelLogin.style.display = 'none';
     panelReg.style.display = 'block';
+    trackVisitorPageView('/registrasi', 'SIPALARUS — Pendaftaran Akun Pemohon');
   } else {
     tabReg.classList.remove('active');
     tabLogin.classList.add('active');
     panelReg.style.display = 'none';
     panelLogin.style.display = 'block';
+    trackVisitorPageView('/login', 'SIPALARUS — Masuk Pemohon');
   }
 }
 
@@ -576,6 +657,7 @@ function showMainApp() {
   restoreDraftIfAvailable();
   goStep(1);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  trackVisitorPageView('/permohonan-bap', 'SIPALARUS — Formulir Permohonan BAP');
 }
 
 async function showUserDashboard() {
@@ -594,6 +676,7 @@ async function showUserDashboard() {
   startDashboardAutoRefresh();
   await loadUserPhoneStatus();
   await loadUserRegistration();
+  trackVisitorPageView('/dashboard-pemohon', 'SIPALARUS — Dashboard Status Permohonan');
 }
 
 function backToLanding() {
@@ -3653,5 +3736,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Lacak page_view awal saat website dibuka (Fresh load / Refresh halaman)
+  let initialPath = '/';
+  let initialTitle = 'SIPALARUS — Beranda Layanan Paspor Rusak & Hilang';
+  if (document.getElementById('authPage')?.classList.contains('active')) {
+    const isReg = document.getElementById('registerPanel')?.style.display !== 'none';
+    initialPath = isReg ? '/registrasi' : '/login';
+    initialTitle = isReg ? 'SIPALARUS — Pendaftaran Akun Pemohon' : 'SIPALARUS — Masuk Pemohon';
+  } else if (document.getElementById('mainApp')?.classList.contains('active')) {
+    initialPath = '/permohonan-bap';
+    initialTitle = 'SIPALARUS — Formulir Permohonan BAP';
+  } else if (document.getElementById('userDashboardPage')?.classList.contains('active')) {
+    initialPath = '/dashboard-pemohon';
+    initialTitle = 'SIPALARUS — Dashboard Status Permohonan';
+  }
+  trackVisitorPageView(initialPath, initialTitle);
 });
 
