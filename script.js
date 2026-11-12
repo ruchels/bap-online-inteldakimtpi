@@ -6,7 +6,7 @@
 ═══════════════════════════════════════════════════ */
 
 /* ── CONFIGURATION ── */
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6LGyjByQDSpr-yfEGAK2UQWQo_h73tvJ0PShCSa7k14y4ZUXK7embOnzpU3zSNMPD/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby58EKobnIAS1J7YTfZdzIhqjYVA6etB1pf6TzUeB6dW1iL7RrS8BRkfODfby-C1z7M/exec';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_SLOTS = 1; // 1 Petugas Pemeriksa (1 Pemohon per Sesi)
 const SESSION_KEY = 'baper_session';
