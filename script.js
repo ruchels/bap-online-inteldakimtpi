@@ -82,8 +82,7 @@ function trackVisitorPageView(pagePath = '/', pageTitle = '') {
 const SLOT_DEFS = [
   { id: 'A', label: '08:00 – 10:00 WIB', title: 'Sesi Pagi I', start: 8, end: 10 },
   { id: 'B', label: '10:00 – 12:00 WIB', title: 'Sesi Pagi II', start: 10, end: 12 },
-  { id: 'C', label: '13:30 – 15:00 WIB', title: 'Sesi Siang I', start: 13.5, end: 15 },
-  { id: 'D', label: '15:30 – 17:00 WIB', title: 'Sesi Siang II', start: 15.5, end: 17 },
+  { id: 'C', label: '13:30 – 15:00 WIB', title: 'Sesi Siang', start: 13.5, end: 15 }
 ];
 
 /* ── RUNTIME STATE ── */
